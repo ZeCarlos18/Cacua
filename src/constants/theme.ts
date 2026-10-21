@@ -26,6 +26,18 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+/** Cores do Caçuá, iguais às do protótipo no Figma. */
+export const Cacua = {
+  fundo: '#F6F2EA',
+  superficie: '#FFFFFF',
+  texto: '#1F261E',
+  textoSecundario: '#5B6157',
+  verde: '#2E7045',
+  verdeEscuro: '#1F4F30',
+  verdeClaro: '#DCEBDF',
+  borda: '#DED7C8',
+} as const;
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
