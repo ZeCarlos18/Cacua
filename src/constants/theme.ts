@@ -35,6 +35,10 @@ export const Cacua = {
   verde: '#2E7045',
   verdeEscuro: '#1F4F30',
   verdeClaro: '#DCEBDF',
+  amarelo: '#7A5600',
+  amareloClaro: '#FBEFC7',
+  vermelho: '#9E3326',
+  vermelhoClaro: '#F6DCD7',
   borda: '#DED7C8',
 } as const;
 
