@@ -30,6 +30,11 @@ export const coresDoSelo = {
     fundo: { backgroundColor: Cacua.vermelhoClaro },
     texto: { color: Cacua.vermelho },
   }),
+  /** Sem julgamento de bom ou ruim, como "Previsto" na Previsão. */
+  neutro: StyleSheet.create({
+    fundo: { backgroundColor: Cacua.borda },
+    texto: { color: Cacua.texto },
+  }),
 };
 
 export type CorDoSelo = keyof typeof coresDoSelo;
