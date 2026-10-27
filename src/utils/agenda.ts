@@ -5,7 +5,7 @@
 
 import type { Href } from 'expo-router';
 
-type Aviso = { produtor: number; fruta: string; caixas: number };
+export type Aviso = { produtor: number; fruta: string; caixas: number };
 
 export function capitalizar(texto: string) {
   return texto.charAt(0).toUpperCase() + texto.slice(1);

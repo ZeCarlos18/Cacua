@@ -3,9 +3,8 @@
  * aqui só o que a tela mostra em volta deles.
  */
 
-import { capitalizar, idDoDia } from '@/utils/agenda';
+import { capitalizar, idDoDia, type Aviso } from '@/utils/agenda';
 
-type Aviso = { produtor: number; fruta: string; caixas: number };
 type Produtor = { id: number; nome: string; sitio: string; canal: string };
 
 /** Acha o dia da agenda pelo id do endereço ("01-out" → quinta 01/out). */
