@@ -36,10 +36,11 @@ export function custoPorCaixa(custosRota: number, caixas: number) {
 
 /** Um item por aviso do dia, com o nome, o sítio e o canal do produtor. */
 export function quemAvisou(avisos: Aviso[], produtores: Produtor[]) {
-  return avisos.map((aviso) => {
+  return avisos.map((aviso, posicao) => {
     const produtor = produtores.find((p) => p.id === aviso.produtor);
     return {
-      chave: `${aviso.produtor}-${aviso.fruta}`,
+      // A posição entra na chave porque o mesmo produtor pode avisar a mesma fruta duas vezes no dia.
+      chave: `${posicao}-${aviso.produtor}-${aviso.fruta}`,
       nome: produtor?.nome ?? 'Produtor sem cadastro',
       sitio: produtor?.sitio ?? '',
       canal: produtor?.canal ?? '',

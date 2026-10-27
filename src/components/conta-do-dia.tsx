@@ -96,6 +96,15 @@ export function ContaDoDia({ dia, conta, custos, produtores, cargaMinima }: Cont
   );
 }
 
+/** Quando o endereço aponta para um dia que não está na agenda. */
+export function ContaNaoEncontrada() {
+  return (
+    <View style={styles.vazio}>
+      <Text style={styles.vazioTexto}>Não achamos esse dia na agenda.</Text>
+    </View>
+  );
+}
+
 type LinhaProps = {
   rotulo: string;
   valor: number;
@@ -107,7 +116,14 @@ function Linha({ rotulo, valor, destaque }: LinhaProps) {
   return (
     <View style={styles.linha}>
       <Text style={[styles.rotulo, destaque && styles.rotuloDestaque]}>{rotulo}</Text>
-      <Text style={[styles.valor, destaque && styles.valorDestaque]}>{formatarReais(valor)}</Text>
+      <Text
+        style={[
+          styles.valor,
+          destaque && styles.valorDestaque,
+          destaque && valor < 0 && styles.valorNegativo,
+        ]}>
+        {formatarReais(valor)}
+      </Text>
     </View>
   );
 }

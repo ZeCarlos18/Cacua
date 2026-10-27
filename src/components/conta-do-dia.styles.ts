@@ -65,6 +65,9 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.verdeEscuro,
   },
+  valorNegativo: {
+    color: Cacua.vermelho,
+  },
   divisor: {
     height: 1,
     marginVertical: Spacing.one,
@@ -114,6 +117,18 @@ export const styles = StyleSheet.create({
   produtorDetalhe: {
     fontSize: 14,
     lineHeight: 20,
+    color: Cacua.textoSecundario,
+  },
+  vazio: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.four,
+    backgroundColor: Cacua.fundo,
+  },
+  vazioTexto: {
+    fontSize: 16,
+    lineHeight: 22,
     color: Cacua.textoSecundario,
   },
 });
