@@ -1,9 +1,8 @@
-import { DefaultTheme, ThemeProvider } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
 import { Cacua } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -21,12 +20,26 @@ const temaCacua = {
   },
 };
 
-export default function TabLayout() {
+// Abrindo /conta/01-out direto (link ou recarregar na web), as abas ficam por baixo e o voltar aparece.
+export const unstable_settings = {
+  anchor: '(abas)',
+};
+
+// As abas ficam embaixo de tudo; telas como a Conta do dia (S2.4) abrem por cima, com botão de voltar.
+export default function RootLayout() {
   return (
     <ThemeProvider value={temaCacua}>
       <StatusBar style="dark" />
       <AnimatedSplashOverlay />
-      <AppTabs />
+      <Stack
+        screenOptions={{
+          headerTintColor: Cacua.verde,
+          headerTitleStyle: { color: Cacua.texto },
+          headerStyle: { backgroundColor: Cacua.superficie },
+        }}>
+        <Stack.Screen name="(abas)" options={{ headerShown: false }} />
+        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
+      </Stack>
     </ThemeProvider>
   );
 }

@@ -5,9 +5,9 @@
 
 import type { Href } from 'expo-router';
 
-type Aviso = { produtor: number; fruta: string; caixas: number };
+export type Aviso = { produtor: number; fruta: string; caixas: number };
 
-function capitalizar(texto: string) {
+export function capitalizar(texto: string) {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
@@ -45,10 +45,7 @@ export function idDoDia(data: string) {
   return data.replace('/', '-');
 }
 
-/**
- * Endereço da tela Conta do dia (S2.4), combinado com o Caique: /conta/01-out.
- * O cast é porque a rota /conta/[dia] só passa a existir quando o S2.4 entrar.
- */
-export function hrefDaConta(data: string) {
-  return `/conta/${idDoDia(data)}` as Href;
+/** Endereço da tela Conta do dia (S2.4), combinado com o Caique: /conta/01-out. */
+export function hrefDaConta(data: string): Href {
+  return `/conta/${idDoDia(data)}`;
 }
