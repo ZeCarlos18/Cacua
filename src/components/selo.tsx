@@ -13,18 +13,20 @@ const COR_POR_SELO: Record<string, CorDoSelo> = {
 type SeloProps = {
   /** Um dos textos de SELOS (calculos.js), por exemplo o `selo` que sai do calcularLucroDoDia. */
   texto: string;
+  /** Cor fixa, para selos que não são do dia (o canal do produtor, por exemplo). */
+  cor?: CorDoSelo;
 };
 
 /**
  * Selo do dia (S2.3): verde para "Vale a pena", amarelo para "Vale com atenção"
  * e vermelho para "Não vale a pena". Usado na Agenda e na Conta do dia (S2.4).
  */
-export function Selo({ texto }: SeloProps) {
-  const cor = coresDoSelo[COR_POR_SELO[texto] ?? 'vermelho'];
+export function Selo({ texto, cor }: SeloProps) {
+  const estilo = coresDoSelo[cor ?? COR_POR_SELO[texto] ?? 'vermelho'];
 
   return (
-    <View style={[styles.selo, cor.fundo]}>
-      <Text style={[styles.texto, cor.texto]}>{texto}</Text>
+    <View style={[styles.selo, estilo.fundo]}>
+      <Text style={[styles.texto, estilo.texto]}>{texto}</Text>
     </View>
   );
 }
