@@ -20,6 +20,11 @@ const temaCacua = {
   },
 };
 
+// Abrindo /conta/01-out direto (link ou recarregar na web), as abas ficam por baixo e o voltar aparece.
+export const unstable_settings = {
+  anchor: '(abas)',
+};
+
 // As abas ficam embaixo de tudo; telas como a Conta do dia (S2.4) abrem por cima, com botão de voltar.
 export default function RootLayout() {
   return (
