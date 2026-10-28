@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { ContaDoDia, ContaNaoEncontrada } from '@/components/conta-do-dia';
-import { agenda, coletor, custos, precos, produtores } from '@/data/dados';
+import { agenda, coletor, custos, posto, precos, produtores } from '@/data/dados';
 import { calcularLucroDoDia } from '@/utils/calculos';
 import { diaPeloId, tituloDaConta } from '@/utils/conta';
+import { diaComKm } from '@/utils/rota';
 
 /** Conta do dia (S2.4): abre pelo "Ver conta" da Agenda, em /conta/01-out. */
 export default function ContaScreen() {
@@ -19,12 +20,14 @@ export default function ContaScreen() {
     );
   }
 
+  const diaDaRota = diaComKm(dia, produtores, posto);
+
   return (
     <>
       <Stack.Screen options={{ title: tituloDaConta(dia.dia) }} />
       <ContaDoDia
-        dia={dia}
-        conta={calcularLucroDoDia(dia, precos, custos)}
+        dia={diaDaRota}
+        conta={calcularLucroDoDia(diaDaRota, precos, custos)}
         custos={custos}
         produtores={produtores}
         cargaMinima={coletor.cargaMinima}

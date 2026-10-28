@@ -1,8 +1,9 @@
 import { CartaoDia } from '@/components/cartao-dia';
 import { Lista } from '@/components/lista';
 import { Tela } from '@/components/tela';
-import { agenda, coletor, custos, precos } from '@/data/dados';
+import { agenda, coletor, custos, posto, precos, produtores } from '@/data/dados';
 import { calcularLucroDoDia } from '@/utils/calculos';
+import { diaComKm } from '@/utils/rota';
 
 export default function AgendaScreen() {
   return (
@@ -12,7 +13,7 @@ export default function AgendaScreen() {
           <CartaoDia
             key={dia.data}
             dia={dia}
-            conta={calcularLucroDoDia(dia, precos, custos)}
+            conta={calcularLucroDoDia(diaComKm(dia, produtores, posto), precos, custos)}
             cargaMinima={coletor.cargaMinima}
           />
         ))}

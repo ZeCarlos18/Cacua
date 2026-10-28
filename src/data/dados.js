@@ -24,25 +24,28 @@ export const custos = {
 
 export const pontoFocal = 'Joana'; 
 
+// Posições (x, y) no mapa ilustrativo do protótipo. A rota sai do posto e volta para ele (S3.1).
+export const posto = { nome: 'Posto', x: 36, y: 396 };
+
 export const produtores = [
-  { id: 1, nome: 'Seu Francisco', sitio: 'Sítio Boa Vista', frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 4, avisos: 4 },
-  { id: 2, nome: 'Seu Antônio', sitio: "Sítio Pau d'Arco", frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 6, avisos: 7 },
-  { id: 3, nome: 'Dona Maria', sitio: 'Sítio Riacho Verde', frutas: ['manga'], canal: 'Ponto focal', cumpridos: 3, avisos: 3 },
-  { id: 4, nome: 'Dona Lúcia', sitio: "Sítio Olho d'Água", frutas: ['maracujá', 'mamão'], canal: 'WhatsApp', cumpridos: 5, avisos: 5 },
-  { id: 5, nome: 'Seu Raimundo', sitio: 'Sítio Baixio', frutas: ['banana'], canal: 'Ponto focal', cumpridos: 2, avisos: 3 },
-  { id: 6, nome: 'Seu Pedro', sitio: 'Sítio Cajueiro', frutas: ['banana', 'coco'], canal: 'WhatsApp', cumpridos: 4, avisos: 4 },
+  { id: 1, nome: 'Seu Francisco', sitio: 'Sítio Boa Vista', frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 4, avisos: 4, posicao: { x: 160, y: 196 } },
+  { id: 2, nome: 'Seu Antônio', sitio: "Sítio Pau d'Arco", frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 6, avisos: 7, posicao: { x: 214, y: 64 } },
+  { id: 3, nome: 'Dona Maria', sitio: 'Sítio Riacho Verde', frutas: ['manga'], canal: 'Ponto focal', cumpridos: 3, avisos: 3, posicao: { x: 84, y: 118 } },
+  { id: 4, nome: 'Dona Lúcia', sitio: "Sítio Olho d'Água", frutas: ['maracujá', 'mamão'], canal: 'WhatsApp', cumpridos: 5, avisos: 5, posicao: { x: 300, y: 262 } },
+  { id: 5, nome: 'Seu Raimundo', sitio: 'Sítio Baixio', frutas: ['banana'], canal: 'Ponto focal', cumpridos: 2, avisos: 3, posicao: { x: 262, y: 104 } },
+  { id: 6, nome: 'Seu Pedro', sitio: 'Sítio Cajueiro', frutas: ['banana', 'coco'], canal: 'WhatsApp', cumpridos: 4, avisos: 4, posicao: { x: 118, y: 300 } },
 ];
 
 export const agenda = [
   {
-    dia: 'Quarta', data: '30/set', km: 16.556,
+    dia: 'Quarta', data: '30/set',
     avisos: [
       { produtor: 5, fruta: 'banana', caixas: 10 },
       { produtor: 4, fruta: 'mamão', caixas: 8 },
     ],
   },
   {
-    dia: 'Quinta', data: '01/out', km: 18.696,
+    dia: 'Quinta', data: '01/out',
     avisos: [
       { produtor: 3, fruta: 'manga', caixas: 20 },
       { produtor: 2, fruta: 'goiaba', caixas: 12 },
@@ -50,14 +53,14 @@ export const agenda = [
     ],
   },
   {
-    dia: 'Sexta', data: '02/out', km: 15.155,
+    dia: 'Sexta', data: '02/out',
     avisos: [
       { produtor: 2, fruta: 'manga', caixas: 14 },
       { produtor: 6, fruta: 'banana', caixas: 12 },
     ],
   },
   {
-    dia: 'Sábado', data: '03/out', km: 15.068,
+    dia: 'Sábado', data: '03/out',
     avisos: [
       { produtor: 2, fruta: 'goiaba', caixas: 9 },
     ],

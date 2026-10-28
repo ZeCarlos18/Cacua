@@ -1,10 +1,11 @@
-// Confere a conta do lucro (S1.6) com os números do Figma.
-// Rodar na raiz do projeto: node --no-warnings scripts/conferir-calculos.mjs
+// Confere a conta do lucro (S1.6) com os números do Figma, usando o km da montarRota (S3.1).
+// Rodar na raiz do projeto: npm run conferir
 
-import { agenda, custos, precos } from '../src/data/dados.js';
-import { calcularLucroDoDia, formatarReais } from '../src/utils/calculos.js';
+import { agenda, custos, posto, precos, produtores } from '@/data/dados';
+import { calcularLucroDoDia, formatarReais } from '@/utils/calculos';
+import { diaComKm } from '@/utils/rota';
 
-const esperado = {
+const esperado: Record<string, { lucro: number; selo: string; custosRota?: number }> = {
   '30/set': { lucro: 30.3, selo: 'Vale com atenção' },
   '01/out': { lucro: 484.86, selo: 'Vale a pena', custosRota: 95.64 },
   '02/out': { lucro: 110.82, selo: 'Vale com atenção' },
@@ -14,10 +15,10 @@ const esperado = {
 let falhas = 0;
 
 for (const dia of agenda) {
-  const conta = calcularLucroDoDia(dia, precos, custos);
+  const conta = calcularLucroDoDia(diaComKm(dia, produtores, posto), precos, custos);
   const alvo = esperado[dia.data];
   const ok =
-    alvo &&
+    alvo !== undefined &&
     conta.lucro === alvo.lucro &&
     conta.selo === alvo.selo &&
     (alvo.custosRota === undefined || conta.custosRota === alvo.custosRota);
