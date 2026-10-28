@@ -38,14 +38,14 @@ export const produtores = [
 
 export const agenda = [
   {
-    dia: 'Quarta', data: '30/set', km: 16.556,
+    dia: 'Quarta', data: '30/set',
     avisos: [
       { produtor: 5, fruta: 'banana', caixas: 10 },
       { produtor: 4, fruta: 'mamão', caixas: 8 },
     ],
   },
   {
-    dia: 'Quinta', data: '01/out', km: 18.696,
+    dia: 'Quinta', data: '01/out',
     avisos: [
       { produtor: 3, fruta: 'manga', caixas: 20 },
       { produtor: 2, fruta: 'goiaba', caixas: 12 },
@@ -53,14 +53,14 @@ export const agenda = [
     ],
   },
   {
-    dia: 'Sexta', data: '02/out', km: 15.155,
+    dia: 'Sexta', data: '02/out',
     avisos: [
       { produtor: 2, fruta: 'manga', caixas: 14 },
       { produtor: 6, fruta: 'banana', caixas: 12 },
     ],
   },
   {
-    dia: 'Sábado', data: '03/out', km: 15.068,
+    dia: 'Sábado', data: '03/out',
     avisos: [
       { produtor: 2, fruta: 'goiaba', caixas: 9 },
     ],

@@ -11,7 +11,8 @@ import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 import { styles } from './conta-do-dia.styles';
 
 type ContaDoDiaProps = {
-  dia: (typeof agenda)[number];
+  /** O dia da agenda com o km da montarRota (diaComKm). */
+  dia: (typeof agenda)[number] & { km: number };
   conta: ReturnType<typeof calcularLucroDoDia>;
   custos: typeof custosDoColetor;
   produtores: typeof produtoresDoColetor;
