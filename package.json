@@ -41,7 +41,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "conferir": "tsx scripts/conferir-rota.ts"
+    "conferir": "tsx scripts/conferir-rota.ts && tsx scripts/conferir-calculos.ts"
   },
   "private": true
 }
