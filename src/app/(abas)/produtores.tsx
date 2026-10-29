@@ -4,7 +4,8 @@ import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { pontoFocal, produtores } from '@/data/dados';
+import { agenda, pontoFocal, produtores } from '@/data/dados';
+import { proximaColheita } from '@/utils/produtores';
 
 export default function ProdutoresScreen() {
   return (
@@ -25,12 +26,16 @@ export default function ProdutoresScreen() {
               <Text style={styles.detalhe}>
                 {produtor.sitio} · {produtor.frutas.join(', ')}
               </Text>
-              <Text style={styles.cumpridos}>
-                Cumpridos{' '}
-                <Text style={styles.negrito}>
-                  {produtor.cumpridos} de {produtor.avisos}
+              <View style={styles.rodape}>
+                <Text style={styles.cumpridos}>
+                  Cumpridos{' '}
+                  <Text style={styles.negrito}>
+                    {produtor.cumpridos} de {produtor.avisos}
+                  </Text>
                 </Text>
-              </Text>
+                {/* Próxima colheita (S3.5): "Quinta · 20 cx de manga", "Qui, sex e sáb" ou a previsão. */}
+                <Text style={styles.colheita}>{proximaColheita(produtor, agenda)}</Text>
+              </View>
             </View>
           ))}
         </View>
@@ -73,7 +78,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Cacua.textoSecundario,
   },
+  rodape: {
+    // A próxima colheita fica ao lado do "Cumpridos" quando cabe e desce para a linha de baixo
+    // quando não cabe (em celulares de 360 px, "Goiaba prevista (pela poda)").
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    columnGap: Spacing.two,
+  },
   cumpridos: {
+    fontSize: 15,
+    color: Cacua.texto,
+  },
+  colheita: {
+    flexGrow: 1,
+    flexShrink: 1,
+    textAlign: 'right',
     fontSize: 15,
     color: Cacua.texto,
   },
