@@ -28,7 +28,8 @@ export const pontoFocal = 'Joana';
 export const posto = { nome: 'Posto', x: 36, y: 396 };
 
 export const produtores = [
-  { id: 1, nome: 'Seu Francisco', sitio: 'Sítio Boa Vista', frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 4, avisos: 4, posicao: { x: 160, y: 196 } },
+  // previsao: o texto da próxima colheita quando o produtor não tem aviso na agenda (S3.5).
+  { id: 1, nome: 'Seu Francisco', sitio: 'Sítio Boa Vista', frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 4, avisos: 4, posicao: { x: 160, y: 196 }, previsao: 'Goiaba prevista (pela poda)' },
   { id: 2, nome: 'Seu Antônio', sitio: "Sítio Pau d'Arco", frutas: ['goiaba', 'manga'], canal: 'WhatsApp', cumpridos: 6, avisos: 7, posicao: { x: 214, y: 64 } },
   { id: 3, nome: 'Dona Maria', sitio: 'Sítio Riacho Verde', frutas: ['manga'], canal: 'Ponto focal', cumpridos: 3, avisos: 3, posicao: { x: 84, y: 118 } },
   { id: 4, nome: 'Dona Lúcia', sitio: "Sítio Olho d'Água", frutas: ['maracujá', 'mamão'], canal: 'WhatsApp', cumpridos: 5, avisos: 5, posicao: { x: 300, y: 262 } },
