@@ -5,6 +5,7 @@ import { RotaDoDia, RotaNaoEncontrada } from '@/components/rota-do-dia';
 import { Tela } from '@/components/tela';
 import { agenda, custos, posto, precos, produtores, rota } from '@/data/dados';
 import { calcularLucroDoDia } from '@/utils/calculos';
+import { areaDoMapa } from '@/utils/mapa-rota';
 import { montarRota } from '@/utils/rota';
 import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
 
@@ -33,6 +34,8 @@ export default function RotaScreen() {
           conta={calcularLucroDoDia({ ...dia, km }, precos, custos)}
           coletados={coletados}
           semPosicao={nomesDosProdutores(semPosicao, produtores)}
+          posto={posto}
+          area={areaDoMapa(posto, produtores)}
           onRegistrar={(id) =>
             setColetados((atuais) => (atuais.includes(id) ? atuais : [...atuais, id]))
           }
