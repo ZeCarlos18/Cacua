@@ -40,6 +40,8 @@ export const Cacua = {
   vermelho: '#9E3326',
   vermelhoClaro: '#F6DCD7',
   borda: '#DED7C8',
+  /** Fundo do mapa ilustrativo da Rota (S3.4). Hoje é o mesmo bege da borda, mas muda separado. */
+  mapa: '#DED7C8',
 } as const;
 
 export const Fonts = Platform.select({

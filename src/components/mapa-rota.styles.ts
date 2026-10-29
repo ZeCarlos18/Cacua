@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     // Respiro para os círculos da borda (Pau d'Arco em cima, o posto embaixo) não encostarem.
     padding: Spacing.two + Spacing.one,
     borderRadius: Spacing.three,
-    backgroundColor: Cacua.borda,
+    backgroundColor: Cacua.mapa,
   },
   area: {
     // A largura sai do aspectRatio (a proporção da área do mapa), para não distorcer as distâncias.
