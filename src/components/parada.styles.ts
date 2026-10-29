@@ -27,8 +27,19 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.superficie,
   },
-  info: {
+  conteudo: {
     flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: Spacing.two + Spacing.one,
+    rowGap: Spacing.two + Spacing.one,
+  },
+  info: {
+    // Sem flex: 1 (que zera a largura base): o texto ocupa a largura dele, e o botão só fica
+    // ao lado quando os dois cabem na linha.
+    flexGrow: 1,
+    flexShrink: 1,
     gap: Spacing.half,
   },
   sitio: {

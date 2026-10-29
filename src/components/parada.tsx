@@ -24,37 +24,42 @@ type ParadaProps = {
 export function Parada({ numero, sitio, produtor, fruta, caixas, coletada, onRegistrar }: ParadaProps) {
   return (
     <View style={styles.parada}>
+      {/* accessible: no iOS e no Android, o leitor de tela lê o rótulo, e não o "✓" ou o número soltos. */}
       <View
+        accessible
         style={[styles.circulo, coletada && styles.circuloColetado]}
         accessibilityLabel={coletada ? `Parada ${numero}, coletada` : `Parada ${numero}`}>
         <Text style={styles.circuloTexto}>{coletada ? '✓' : numero}</Text>
       </View>
 
-      <View style={styles.info}>
-        <Text style={styles.sitio}>{sitio}</Text>
-        <Text style={styles.detalhe}>{produtor}</Text>
-        <Text style={styles.detalhe}>
-          {fruta} · {textoDasCaixas(caixas)}
-        </Text>
-      </View>
-
-      {coletada ? (
-        <View style={styles.coletado}>
-          {/* O Selo se alinha à esquerda (alignSelf); a linha o leva para a direita. */}
-          <View style={styles.linhaDoSelo}>
-            <Selo texto="Coletado" cor="verde" />
-          </View>
-          <Text style={styles.recibo}>recibo enviado</Text>
+      {/* O botão (ou o Selo) fica ao lado do texto quando cabe e desce para baixo dele quando não cabe. */}
+      <View style={styles.conteudo}>
+        <View style={styles.info}>
+          <Text style={styles.sitio}>{sitio}</Text>
+          <Text style={styles.detalhe}>{produtor}</Text>
+          <Text style={styles.detalhe}>
+            {fruta} · {textoDasCaixas(caixas)}
+          </Text>
         </View>
-      ) : (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Registrar coleta no ${sitio}`}
-          onPress={onRegistrar}
-          style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
-          <Text style={styles.botaoTexto}>Registrar coleta</Text>
-        </Pressable>
-      )}
+
+        {coletada ? (
+          <View style={styles.coletado}>
+            {/* O Selo se alinha à esquerda (alignSelf); a linha o leva para a direita. */}
+            <View style={styles.linhaDoSelo}>
+              <Selo texto="Coletado" cor="verde" />
+            </View>
+            <Text style={styles.recibo}>recibo enviado</Text>
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Registrar coleta no ${sitio}`}
+            onPress={onRegistrar}
+            style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
+            <Text style={styles.botaoTexto}>Registrar coleta</Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
