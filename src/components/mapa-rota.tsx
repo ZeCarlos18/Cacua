@@ -7,11 +7,9 @@ import {
   posicaoNoMapa,
   type AreaDoMapa,
 } from '@/utils/mapa-rota';
-import type { Parada } from '@/utils/rota';
+import type { Parada, Posicao } from '@/utils/rota';
 
 import { styles } from './mapa-rota.styles';
-
-type Posicao = Parada['posicao'];
 
 type MapaRotaProps = {
   posto: Posicao;

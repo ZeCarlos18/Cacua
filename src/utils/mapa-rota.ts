@@ -4,7 +4,7 @@
  * margem, para o mapa ficar igual em qualquer dia.
  */
 
-type Posicao = { x: number; y: number };
+import type { Posicao } from '@/utils/rota';
 
 /** Folga entre os pontos da borda e a borda do mapa, em unidades do mapa. */
 const MARGEM = 20;

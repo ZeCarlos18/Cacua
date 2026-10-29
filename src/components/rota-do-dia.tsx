@@ -6,7 +6,7 @@ import { Parada } from '@/components/parada';
 import { Selo } from '@/components/selo';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 import type { AreaDoMapa } from '@/utils/mapa-rota';
-import type { Parada as ParadaDaRota } from '@/utils/rota';
+import type { Parada as ParadaDaRota, Posicao } from '@/utils/rota';
 import { caixasColetadas, resumoDaRota, textoDoColetado, totalDeCaixas } from '@/utils/rota-do-dia';
 
 import { styles } from './rota-do-dia.styles';
@@ -21,7 +21,7 @@ type RotaDoDiaProps = {
   /** Nomes dos produtores que ficaram fora da rota por não ter posição no mapa. */
   semPosicao: string[];
   /** Posição do posto e área do mapa ilustrativo (S3.4). */
-  posto: ParadaDaRota['posicao'];
+  posto: Posicao;
   area: AreaDoMapa;
   onRegistrar: (id: number) => void;
 };

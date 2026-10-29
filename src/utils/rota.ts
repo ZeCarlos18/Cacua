@@ -11,7 +11,8 @@ import { capitalizar, type Aviso } from '@/utils/agenda';
 /** Cada unidade do mapa ilustrativo vale 0,02 km. */
 const KM_POR_UNIDADE = 0.02;
 
-type Posicao = { x: number; y: number };
+/** Um ponto no mapa ilustrativo (x, y), como o posto e a `posicao` dos produtores no dados.js. */
+export type Posicao = { x: number; y: number };
 type Produtor = { id: number; nome: string; sitio: string; posicao?: Posicao };
 type DiaComAvisos = { avisos: Aviso[] };
 
