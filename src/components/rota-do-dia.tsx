@@ -1,10 +1,12 @@
 import { Text, View } from 'react-native';
 
 import { BarraCarga } from '@/components/barra-carga';
+import { MapaRota } from '@/components/mapa-rota';
 import { Parada } from '@/components/parada';
 import { Selo } from '@/components/selo';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
-import type { Parada as ParadaDaRota } from '@/utils/rota';
+import type { AreaDoMapa } from '@/utils/mapa-rota';
+import type { Parada as ParadaDaRota, Posicao } from '@/utils/rota';
 import { caixasColetadas, resumoDaRota, textoDoColetado, totalDeCaixas } from '@/utils/rota-do-dia';
 
 import { styles } from './rota-do-dia.styles';
@@ -18,6 +20,9 @@ type RotaDoDiaProps = {
   coletados: number[];
   /** Nomes dos produtores que ficaram fora da rota por não ter posição no mapa. */
   semPosicao: string[];
+  /** Posição do posto e área do mapa ilustrativo (S3.4). */
+  posto: Posicao;
+  area: AreaDoMapa;
   onRegistrar: (id: number) => void;
 };
 
@@ -25,7 +30,16 @@ type RotaDoDiaProps = {
  * Rota do dia (S3.3), como no Figma: resumo com km, lucro e Selo, a barra "Coletado" e as
  * paradas na ordem de visita. Não guarda estado: quem sabe o que foi coletado é a tela.
  */
-export function RotaDoDia({ paradas, km, conta, coletados, semPosicao, onRegistrar }: RotaDoDiaProps) {
+export function RotaDoDia({
+  paradas,
+  km,
+  conta,
+  coletados,
+  semPosicao,
+  posto,
+  area,
+  onRegistrar,
+}: RotaDoDiaProps) {
   const total = totalDeCaixas(paradas);
   const coletadas = caixasColetadas(paradas, coletados);
 
@@ -42,7 +56,7 @@ export function RotaDoDia({ paradas, km, conta, coletados, semPosicao, onRegistr
         <BarraCarga caixas={coletadas} cargaMinima={total} texto={textoDoColetado(coletadas, total)} />
       </View>
 
-      {/* O mapa ilustrativo do S3.4 entra aqui, entre o resumo e as paradas. */}
+      <MapaRota posto={posto} area={area} paradas={paradas} coletados={coletados} />
 
       <View style={[styles.cartao, styles.cartaoParadas]}>
         {paradas.map((parada, posicao) => (
