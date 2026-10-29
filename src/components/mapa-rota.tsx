@@ -34,7 +34,7 @@ export function MapaRota({ posto, area, paradas, coletados }: MapaRotaProps) {
       style={styles.quadro}
       accessible
       accessibilityRole="image"
-      accessibilityLabel={descricaoDoMapa(paradas)}>
+      accessibilityLabel={descricaoDoMapa(paradas, coletados)}>
       <View style={[styles.area, { aspectRatio: area.largura / area.altura }]}>
         <Ponto posicao={posto} area={area} texto="P" estilo={styles.circuloPosto} />
         {paradas.map((parada) => {

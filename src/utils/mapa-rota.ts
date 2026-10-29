@@ -45,8 +45,17 @@ export function nomeCurto(sitio: string) {
   return sitio.replace(/^Sítio\s+/, '');
 }
 
-/** "Mapa ilustrativo da rota: posto, 1 Riacho Verde, 2 Pau d'Arco, 3 Olho d'Água". */
-export function descricaoDoMapa(paradas: { numero: number; sitio: string }[]) {
-  const pontos = paradas.map((parada) => `${parada.numero} ${nomeCurto(parada.sitio)}`);
+/**
+ * "Mapa ilustrativo da rota: posto, 1 Riacho Verde, coletada, 2 Pau d'Arco, 3 Olho d'Água":
+ * a frase do leitor de tela, com as paradas já coletadas marcadas.
+ */
+export function descricaoDoMapa(
+  paradas: { id: number; numero: number; sitio: string }[],
+  coletados: number[],
+) {
+  const pontos = paradas.map((parada) => {
+    const nome = `${parada.numero} ${nomeCurto(parada.sitio)}`;
+    return coletados.includes(parada.id) ? `${nome}, coletada` : nome;
+  });
   return ['Mapa ilustrativo da rota: posto', ...pontos].join(', ');
 }
