@@ -1,9 +1,8 @@
-import { useState } from 'react';
-
 import { Lista } from '@/components/lista';
 import { RotaDoDia, RotaNaoEncontrada } from '@/components/rota-do-dia';
 import { Tela } from '@/components/tela';
-import { agenda, custos, posto, precos, produtores, rota } from '@/data/dados';
+import { posto, produtores, rota } from '@/data/dados';
+import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
 import { areaDoMapa } from '@/utils/mapa-rota';
 import { montarRota } from '@/utils/rota';
@@ -11,8 +10,7 @@ import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
 
 /** Rota do dia (S3.3): as paradas na ordem da montarRota e o "Registrar coleta" de cada uma. */
 export default function RotaScreen() {
-  // Começa com quem já foi coletado no dados.js. Ao fechar o app, volta ao início (salvar fica para depois).
-  const [coletados, setColetados] = useState<number[]>(rota.coletados);
+  const { agenda, custos, precos, coletados, registrarColeta } = useCacua();
   const dia = agenda.find((item) => item.data === rota.data);
 
   if (!dia) {
@@ -36,9 +34,7 @@ export default function RotaScreen() {
           semPosicao={nomesDosProdutores(semPosicao, produtores)}
           posto={posto}
           area={areaDoMapa(posto, produtores)}
-          onRegistrar={(id) =>
-            setColetados((atuais) => (atuais.includes(id) ? atuais : [...atuais, id]))
-          }
+          onRegistrar={registrarColeta}
         />
       </Lista>
     </Tela>
