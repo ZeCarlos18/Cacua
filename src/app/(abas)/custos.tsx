@@ -3,23 +3,28 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Lista } from '@/components/lista';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { custos, precos } from '@/data/dados';
+import { useCacua } from '@/state/cacua';
+import type { Custos } from '@/state/estado';
 import { capitalizar } from '@/utils/agenda';
 import { formatarReais } from '@/utils/calculos';
 import { textoDaPorcentagem } from '@/utils/conta';
 
 /** Os custos do coletor, na ordem do Figma: nome, explicação e valor. */
-const seusCustos = [
-  { nome: 'Você paga ao produtor', explicacao: '% do preço de referência', valor: textoDaPorcentagem(custos.pagoProdutor) },
-  { nome: 'Perda estimada', explicacao: 'fruta que estraga no caminho', valor: textoDaPorcentagem(custos.perda) },
-  { nome: 'Consumo do veículo', explicacao: 'km por litro', valor: `${custos.kmPorLitro} km/l` },
-  { nome: 'Diesel', explicacao: 'R$ por litro (média ANP)', valor: formatarReais(custos.diesel) },
-  { nome: 'Desgaste e manutenção', explicacao: 'R$ por km', valor: formatarReais(custos.desgastePorKm) },
-  { nome: 'Outros custos da viagem', explicacao: 'ajudante, taxa da Ceasa', valor: formatarReais(custos.outrosCustos) },
-  { nome: 'Lucro mínimo da viagem', explicacao: 'abaixo disso: “vale com atenção”', valor: formatarReais(custos.lucroMinimo) },
-];
+function seusCustos(custos: Custos) {
+  return [
+    { nome: 'Você paga ao produtor', explicacao: '% do preço de referência', valor: textoDaPorcentagem(custos.pagoProdutor) },
+    { nome: 'Perda estimada', explicacao: 'fruta que estraga no caminho', valor: textoDaPorcentagem(custos.perda) },
+    { nome: 'Consumo do veículo', explicacao: 'km por litro', valor: `${custos.kmPorLitro} km/l` },
+    { nome: 'Diesel', explicacao: 'R$ por litro (média ANP)', valor: formatarReais(custos.diesel) },
+    { nome: 'Desgaste e manutenção', explicacao: 'R$ por km', valor: formatarReais(custos.desgastePorKm) },
+    { nome: 'Outros custos da viagem', explicacao: 'ajudante, taxa da Ceasa', valor: formatarReais(custos.outrosCustos) },
+    { nome: 'Lucro mínimo da viagem', explicacao: 'abaixo disso: “vale com atenção”', valor: formatarReais(custos.lucroMinimo) },
+  ];
+}
 
 export default function CustosScreen() {
+  const { custos, precos } = useCacua();
+
   return (
     <Tela
       titulo="Custos e preços"
@@ -37,7 +42,7 @@ export default function CustosScreen() {
 
         <Text style={styles.tituloSecao}>Seus custos</Text>
         <View style={styles.cartao}>
-          {seusCustos.map((item, i) => (
+          {seusCustos(custos).map((item, i) => (
             <View key={item.nome} style={[styles.custo, i > 0 && styles.divisoria]}>
               <View style={styles.textos}>
                 <Text style={styles.nome}>{item.nome}</Text>
