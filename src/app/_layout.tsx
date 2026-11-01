@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Cacua } from '@/constants/theme';
+import { CacuaProvider } from '@/state/cacua';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,15 +32,17 @@ export default function RootLayout() {
     <ThemeProvider value={temaCacua}>
       <StatusBar style="dark" />
       <AnimatedSplashOverlay />
-      <Stack
-        screenOptions={{
-          headerTintColor: Cacua.verde,
-          headerTitleStyle: { color: Cacua.texto },
-          headerStyle: { backgroundColor: Cacua.superficie },
-        }}>
-        <Stack.Screen name="(abas)" options={{ headerShown: false }} />
-        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
-      </Stack>
+      <CacuaProvider>
+        <Stack
+          screenOptions={{
+            headerTintColor: Cacua.verde,
+            headerTitleStyle: { color: Cacua.texto },
+            headerStyle: { backgroundColor: Cacua.superficie },
+          }}>
+          <Stack.Screen name="(abas)" options={{ headerShown: false }} />
+          <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
+        </Stack>
+      </CacuaProvider>
     </ThemeProvider>
   );
 }
