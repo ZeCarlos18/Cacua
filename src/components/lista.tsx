@@ -1,19 +1,15 @@
-import type { ReactNode } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, type ScrollViewProps } from 'react-native';
 
 import { styles } from './lista.styles';
 
-type ListaProps = {
-  children: ReactNode;
-};
-
 /** Lista que rola dentro da Tela, com espaço entre os itens (os cartões da Agenda, por exemplo). */
-export function Lista({ children }: ListaProps) {
+export function Lista({ children, ...props }: ScrollViewProps) {
   return (
     <ScrollView
       style={styles.lista}
       contentContainerStyle={styles.conteudo}
-      showsVerticalScrollIndicator={false}>
+      showsVerticalScrollIndicator={false}
+      {...props}>
       {children}
     </ScrollView>
   );
