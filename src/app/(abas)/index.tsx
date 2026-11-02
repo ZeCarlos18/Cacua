@@ -1,3 +1,4 @@
+import { BotaoRegistrarAviso } from '@/components/botao-registrar-aviso';
 import { CartaoDia } from '@/components/cartao-dia';
 import { Lista } from '@/components/lista';
 import { Tela } from '@/components/tela';
@@ -12,6 +13,7 @@ export default function AgendaScreen() {
   return (
     <Tela titulo="Agenda" descricao="Próximas coletas e se vale a pena passar em cada dia.">
       <Lista>
+        <BotaoRegistrarAviso />
         {agenda.map((dia) => (
           <CartaoDia
             key={dia.data}
