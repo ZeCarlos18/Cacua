@@ -4,10 +4,13 @@ import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { agenda, pontoFocal, produtores } from '@/data/dados';
+import { pontoFocal, produtores } from '@/data/dados';
+import { useCacua } from '@/state/cacua';
 import { proximaColheita } from '@/utils/produtores';
 
 export default function ProdutoresScreen() {
+  const { agenda } = useCacua();
+
   return (
     <Tela
       titulo="Produtores da região"
