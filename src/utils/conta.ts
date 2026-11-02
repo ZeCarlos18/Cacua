@@ -18,9 +18,9 @@ export function tituloDaConta(dia: string) {
   return `Conta ${artigo} ${dia.toLowerCase()}`;
 }
 
-/** 0.8 → "80%". */
+/** 0.8 → "80%"; com a porcentagem editável (S4.3), 0.075 → "7,5%". */
 export function textoDaPorcentagem(fracao: number) {
-  return `${Math.round(fracao * 100)}%`;
+  return `${Math.round(fracao * 10000) / 100}%`.replace('.', ',');
 }
 
 /** 18.696 → "18,7 km": a conta usa o km completo, a tela mostra uma casa. */
