@@ -1,56 +1,104 @@
-# Welcome to your Expo app 👋
+# Caçuá
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+O Caçuá é um app para o coletor de frutas que compra dos pequenos produtores da região e revende no Ceasa. Os produtores avisam quando vão colher (pelo WhatsApp ou pela ponto focal), e o app junta esses avisos numa agenda. Para cada dia, ele calcula se a viagem vale a pena: soma a venda no Ceasa e desconta o que vai para os produtores, a perda, o diesel e os outros custos. Também monta a melhor ordem das paradas, registra cada coleta, mostra a previsão das próximas semanas e deixa o coletor ajustar os próprios custos e preços.
 
-## Get started
+O app tem 5 abas: **Agenda**, **Rota**, **Previsão**, **Produtores** e **Custos**. Por enquanto, ele usa os dados de exemplo de `src/data/dados.js` (o coletor Edson, de Boa Vista, e 6 produtores).
 
-1. Install dependencies
+## Instalar
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Precisa do [Node.js](https://nodejs.org) (versão LTS). Depois de clonar o repositório, na pasta do projeto:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Rode o `npm install` de novo sempre que puxar a `main` e o `package.json` tiver mudado.
 
-### Other setup steps
+## Rodar na web
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+É o jeito mais rápido de ver o app, sem celular:
 
-## Learn more
+```bash
+npx expo start --web
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+O app abre no navegador em `http://localhost:8081`. Para ver no tamanho de celular, aperte **F12** e depois **Ctrl + Shift + M**. Na web, o que o app salva (avisos, custos e coletas) fica no próprio navegador.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Rodar no celular (Android)
 
-## Join the community
+No celular, o app roda como um **build de desenvolvimento**: o próprio Caçuá compilado e instalado no aparelho, ligado ao computador para receber o código.
 
-Join our community of developers creating universal apps.
+### O que precisa estar instalado (uma vez só)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. **JDK 17.** No PowerShell: `choco install -y microsoft-openjdk17`.
+2. **Android Studio**, na instalação padrão (Standard). Em **Settings › Languages & Frameworks › Android SDK**, instale o **Android SDK Platform 36** (Android 16) e pelo menos um **Android SDK Build-Tools**.
+3. **Variáveis de ambiente do Windows** (em "Editar as variáveis de ambiente da sua conta"):
+   - `ANDROID_HOME` apontando para `%LOCALAPPDATA%\Android\Sdk`;
+   - no `Path`, a pasta `%LOCALAPPDATA%\Android\Sdk\platform-tools`.
+4. **No celular, a depuração USB:** em **Configurações › Sobre o telefone**, toque 7 vezes em **Número da versão** para liberar as opções do desenvolvedor. Depois, em **Opções do desenvolvedor**, ligue a **Depuração USB**.
+
+Ligue o celular no computador pelo cabo USB, aceite a pergunta de depuração que aparece na tela e confira:
+
+```bash
+adb devices
+```
+
+O celular tem que aparecer na lista com a palavra `device` do lado.
+
+### Gerar o build e instalar no celular
+
+```bash
+npm run android
+```
+
+Esse comando (`expo run:android`) compila o app, instala no celular e já abre o servidor de desenvolvimento. A primeira vez demora alguns minutos.
+
+### Abrir depois
+
+Com o app já instalado, não precisa compilar de novo para ver mudanças no código. Basta:
+
+```bash
+npx expo start
+```
+
+e apertar **a** no terminal, ou abrir o Caçuá no celular com ele ligado ao computador.
+
+**Quando gerar o build de novo:** depois de instalar uma biblioteca com código nativo (como o Async Storage, que entrou no S4.5) ou de mudar o `app.json`. Aí rode `npm run android` outra vez.
+
+## Conferir os números
+
+```bash
+npm run conferir
+```
+
+Roda os scripts da pasta `scripts/` e compara as contas do app com os números do Figma: a ordem das paradas e os km da rota, o lucro de cada dia, a próxima colheita dos produtores, o estado do app, os custos editáveis, o formulário de novo aviso e o que fica salvo no celular. Cada linha mostra `OK` ou `FALHA`. Se um script falhar, o comando termina com erro e os scripts seguintes não rodam. Ele tem que continuar passando depois de qualquer mudança.
+
+Antes de abrir um pull request, rode também:
+
+```bash
+npx tsc --noEmit
+npx expo lint
+```
+
+## Pastas
+
+| Pasta | O que tem |
+|---|---|
+| `src/app` | As telas. Cada arquivo é uma rota (Expo Router): as 5 abas ficam em `src/app/(abas)`, e telas como a Conta do dia e o Registrar aviso abrem por cima delas. |
+| `src/components` | Os componentes das telas (cartão do dia, parada, mapa, selo…), cada um com os estilos num `*.styles.ts` ao lado. |
+| `src/utils` | As contas e os textos: lucro do dia, rota, previsão, custos. |
+| `src/state` | O estado do app (S4.1): o `CacuaProvider` e o `useCacua()`, com a agenda, os custos, os preços e as coletas, e o que fica salvo no celular (S4.5). |
+| `src/data` | Os dados de exemplo (`dados.js`), o ponto de partida do app. |
+| `src/constants` | As cores e os espaçamentos do Caçuá (`theme.ts`). |
+| `scripts` | Os scripts do `npm run conferir`. |
+| `assets` | Ícone, splash e imagens do app. |
+
+## Como a equipe trabalha
+
+- **Trello:** cada tarefa é um cartão (S1.1, S2.4, S4.2…), com responsável, prazo e o que precisa ser entregue.
+- **Uma branch por cartão**, criada a partir da `main` atualizada, por exemplo `feat/s4.2-readme`.
+- **Pull request:** quando o cartão fica pronto, abrimos um PR para a `main`, descrevendo o que mudou e como foi testado.
+- **Revisão:** outro integrante revisa e testa antes do merge. O `npm run conferir`, o `npx tsc --noEmit` e o `npx expo lint` têm que passar.
+- **Concluído:** o cartão só vai para "Concluído" depois de testado no celular, com o print no card "Como está o app".
+
+Equipe: Caique de Souza Oliveira, José Carlos e Teogenes Cordeiro.
