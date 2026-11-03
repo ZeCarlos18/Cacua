@@ -49,3 +49,38 @@ export function comColeta(estado: EstadoCacua, produtor: number): EstadoCacua {
   if (estado.coletados.includes(produtor)) return estado;
   return { ...estado, coletados: [...estado.coletados, produtor] };
 }
+
+/**
+ * O estado guardado no celular (S4.5), a partir do texto salvo. Devolve null quando não há nada
+ * salvo ou quando o texto não serve, e aí o app usa o dados.js. Custos e preços que faltarem no
+ * salvo (um campo novo numa versão futura do app) vêm do dados.js.
+ */
+export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
+  if (!texto) return null;
+
+  let salvo;
+  try {
+    salvo = JSON.parse(texto);
+  } catch {
+    return null;
+  }
+
+  const ehObjeto = (valor: unknown) => typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+  if (
+    !ehObjeto(salvo) ||
+    !Array.isArray(salvo.agenda) ||
+    !ehObjeto(salvo.custos) ||
+    !ehObjeto(salvo.precos) ||
+    !Array.isArray(salvo.coletados)
+  ) {
+    return null;
+  }
+
+  const padrao = estadoInicial();
+  return {
+    agenda: salvo.agenda,
+    custos: { ...padrao.custos, ...salvo.custos },
+    precos: { ...padrao.precos, ...salvo.precos },
+    coletados: salvo.coletados,
+  };
+}
