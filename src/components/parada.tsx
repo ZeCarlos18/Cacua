@@ -57,10 +57,7 @@ export function Parada({
 
         {coletada ? (
           <View style={styles.coletado}>
-            {/* O Selo se alinha à esquerda (alignSelf); a linha o leva para a direita. */}
-            <View style={styles.linhaDoSelo}>
-              <Selo texto="Coletado" cor="verde" />
-            </View>
+            <Selo texto="Coletado" cor="verde" />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Mandar recibo para ${produtor}`}

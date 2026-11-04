@@ -54,11 +54,9 @@ export const styles = StyleSheet.create({
     color: Cacua.textoSecundario,
   },
   coletado: {
-    alignItems: 'flex-end',
+    // O Selo e o "Mandar recibo" alinhados pela esquerda, também quando descem para baixo do texto.
+    alignItems: 'flex-start',
     gap: Spacing.one,
-  },
-  linhaDoSelo: {
-    flexDirection: 'row',
   },
   botaoRecibo: {
     minHeight: 44,
