@@ -32,6 +32,11 @@ export function nomesDosProdutores(ids: number[], produtores: { id: number; nome
   return ids.map((id) => produtores.find((p) => p.id === id)?.nome ?? `Produtor ${id}`);
 }
 
+/** "12 caixas", ou "1 caixa". Usado na Parada e no recibo (S5.2). */
+export function textoDasCaixas(caixas: number) {
+  return `${caixas} ${caixas === 1 ? 'caixa' : 'caixas'}`;
+}
+
 /** "Coletado 20 de 47 caixas". */
 export function textoDoColetado(coletadas: number, total: number) {
   return `Coletado ${coletadas} de ${total} caixas`;

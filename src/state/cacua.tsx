@@ -3,9 +3,11 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import {
   comAviso,
   comColeta,
+  comConfirmacao,
   comCustos,
   comPreco,
   estadoInicial,
+  semConfirmacao,
   type Custos,
   type EstadoCacua,
 } from '@/state/estado';
@@ -19,8 +21,12 @@ type ValorCacua = EstadoCacua & {
   atualizarCustos: (mudancas: Partial<Custos>) => void;
   /** Muda o preço da caixa (ex.: 'banana', 50). */
   atualizarPreco: (fruta: string, preco: number) => void;
-  /** Marca a coleta pelo id do produtor. */
-  registrarColeta: (produtor: number) => void;
+  /** Marca a coleta do produtor no dia (ex.: '30/set', 4). */
+  registrarColeta: (data: string, produtor: number) => void;
+  /** Confirma a coleta do dia (ex.: '30/set'). */
+  confirmarDia: (data: string) => void;
+  /** Desfaz a confirmação do dia. */
+  desfazerConfirmacao: (data: string) => void;
   /** Volta tudo para os valores do dados.js e apaga o que foi salvo no celular. */
   restaurarPadrao: () => void;
 };
@@ -69,7 +75,9 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
     atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
-    registrarColeta: (produtor) => setEstado((atual) => comColeta(atual, produtor)),
+    registrarColeta: (data, produtor) => setEstado((atual) => comColeta(atual, data, produtor)),
+    confirmarDia: (data) => setEstado((atual) => comConfirmacao(atual, data)),
+    desfazerConfirmacao: (data) => setEstado((atual) => semConfirmacao(atual, data)),
     restaurarPadrao: () => {
       const padrao = estadoInicial();
       naoSalvar.current = padrao;

@@ -10,8 +10,10 @@ import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
 
 /** Rota do dia (S3.3): as paradas na ordem da montarRota e o "Registrar coleta" de cada uma. */
 export default function RotaScreen() {
-  const { agenda, custos, precos, coletados, registrarColeta } = useCacua();
+  const { agenda, custos, precos, coletas, registrarColeta } = useCacua();
   const dia = agenda.find((item) => item.data === rota.data);
+  // A Rota ainda mostra só o dia de rota.data; o S5.4 deixa escolher o dia.
+  const coletados = coletas[rota.data] ?? [];
 
   if (!dia) {
     return (
@@ -27,6 +29,7 @@ export default function RotaScreen() {
     <Tela titulo="Rota do dia" descricao={subtituloDaRota(dia.dia, rota.saida)}>
       <Lista>
         <RotaDoDia
+          dia={dia}
           paradas={paradas}
           km={km}
           conta={calcularLucroDoDia({ ...dia, km }, precos, custos)}
@@ -34,7 +37,7 @@ export default function RotaScreen() {
           semPosicao={nomesDosProdutores(semPosicao, produtores)}
           posto={posto}
           area={areaDoMapa(posto, produtores)}
-          onRegistrar={registrarColeta}
+          onRegistrar={(produtor) => registrarColeta(rota.data, produtor)}
         />
       </Lista>
     </Tela>
