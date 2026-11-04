@@ -26,12 +26,28 @@ O app abre no navegador em `http://localhost:8081`. Para ver no tamanho de celul
 
 ## Rodar no celular (Android)
 
-No celular, o app roda como um **build de desenvolvimento**: o próprio Caçuá compilado e instalado no aparelho, ligado ao computador para receber o código.
+Há dois jeitos. O mais simples é pelo **Expo Go**. O **build de desenvolvimento** instala o próprio Caçuá no celular, como um app de verdade.
 
-### O que precisa estar instalado (uma vez só)
+### Pelo Expo Go (o mais simples)
+
+1. Instale o **Expo Go** pela Play Store, ou atualize se já tiver.
+2. Deixe o celular e o computador na mesma rede Wi-Fi.
+3. Na pasta do projeto, rode:
+
+   ```bash
+   npx expo start
+   ```
+
+4. No Expo Go, toque em **Scan QR code** e leia o QR code que aparece no terminal.
+
+As mudanças no código aparecem no celular assim que o arquivo é salvo.
+
+### Pelo build de desenvolvimento
+
+#### O que precisa estar instalado (uma vez só)
 
 1. **JDK 17.** No PowerShell: `choco install -y microsoft-openjdk17`.
-2. **Android Studio**, na instalação padrão (Standard). Em **Settings › Languages & Frameworks › Android SDK**, instale o **Android SDK Platform 36** (Android 16) e pelo menos um **Android SDK Build-Tools**.
+2. **Android Studio**, na instalação padrão (Standard). Em **Settings › Languages & Frameworks › Android SDK**, instale o **Android SDK Platform 37** e o **Android SDK Build-Tools 37.0.0**, as versões que o React Native do projeto usa para compilar.
 3. **Variáveis de ambiente do Windows** (em "Editar as variáveis de ambiente da sua conta"):
    - `ANDROID_HOME` apontando para `%LOCALAPPDATA%\Android\Sdk`;
    - no `Path`, a pasta `%LOCALAPPDATA%\Android\Sdk\platform-tools`.
@@ -45,7 +61,7 @@ adb devices
 
 O celular tem que aparecer na lista com a palavra `device` do lado.
 
-### Gerar o build e instalar no celular
+#### Gerar o build e instalar no celular
 
 ```bash
 npm run android
@@ -53,15 +69,21 @@ npm run android
 
 Esse comando (`expo run:android`) compila o app, instala no celular e já abre o servidor de desenvolvimento. A primeira vez demora alguns minutos.
 
-### Abrir depois
+#### Abrir depois
 
-Com o app já instalado, não precisa compilar de novo para ver mudanças no código. Basta:
+Com o celular ligado no computador pelo cabo USB, há dois jeitos de abrir o Caçuá instalado:
 
-```bash
-npx expo start
-```
+- **O mais simples:** rodar `npm run android` de novo. Como o app já foi compilado uma vez, essa vez é bem mais rápida, e o comando instala, abre o app e liga o servidor sozinho.
+- **Sem compilar:** ligar a porta do celular ao computador e subir só o servidor (ele fica rodando no terminal):
 
-e apertar **a** no terminal, ou abrir o Caçuá no celular com ele ligado ao computador.
+  ```bash
+  adb reverse tcp:8081 tcp:8081
+  npx expo start
+  ```
+
+  Com o servidor rodando, abra o Caçuá direto no celular. Aqui, não use o **a** do terminal: como o projeto não tem o pacote `expo-dev-client`, o **a** abre o projeto no Expo Go, e não no Caçuá instalado. O `adb reverse` precisa ser rodado de novo sempre que o cabo for reconectado.
+
+As mudanças no código chegam ao app sem compilar de novo.
 
 **Quando gerar o build de novo:** depois de instalar uma biblioteca com código nativo (como o Async Storage, que entrou no S4.5) ou de mudar o `app.json`. Aí rode `npm run android` outra vez.
 
