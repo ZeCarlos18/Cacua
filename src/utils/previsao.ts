@@ -18,12 +18,13 @@ export function textoDasViagens(viagens: number) {
 
 /**
  * Início e fim do período: "28/set – 04/out" → ["28/set", "04/out"]. Quando o início não tem
- * mês ("05 – 11/out"), ele vem do fim: ["05/out", "11/out"].
+ * mês ("05 – 11/out"), ele vem do fim: ["05/out", "11/out"]. Aceita travessão ou hífen, porque o
+ * dados.js é editado à mão; um período com uma data só ("05/out") vira ["05/out", "05/out"].
  */
 export function diasDoPeriodo(periodo: string) {
-  const [inicio, fim] = periodo.split('–').map((parte) => parte.trim());
+  const [inicio, fim = inicio] = periodo.split(/[–-]/).map((parte) => parte.trim());
   const mes = fim.split('/')[1];
-  return [inicio.includes('/') ? inicio : `${inicio}/${mes}`, fim] as const;
+  return [inicio.includes('/') || !mes ? inicio : `${inicio}/${mes}`, fim] as const;
 }
 
 /** Texto da barra para o leitor de tela: "Semana de 26/out a 01/nov, 38 caixas". */

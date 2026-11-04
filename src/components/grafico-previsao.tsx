@@ -53,7 +53,8 @@ export function GraficoPrevisao({ semanas, cargaMinima }: GraficoPrevisaoProps) 
         })}
       </View>
 
-      <View style={styles.rotulos} importantForAccessibility="no-hide-descendants">
+      {/* aria-hidden: as barras e a linha já dizem isso ao leitor de tela, no Android, no iPhone e na web. */}
+      <View style={styles.rotulos} aria-hidden>
         {semanas.map((semana) => (
           <Text key={semana.periodo} style={styles.rotulo}>
             {diasDoPeriodo(semana.periodo)[0]}
@@ -61,7 +62,7 @@ export function GraficoPrevisao({ semanas, cargaMinima }: GraficoPrevisaoProps) 
         ))}
       </View>
 
-      <View style={styles.legenda} importantForAccessibility="no-hide-descendants">
+      <View style={styles.legenda} aria-hidden>
         <View style={styles.legendaTracos}>
           <View style={styles.traco} />
           <View style={styles.traco} />
