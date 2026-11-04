@@ -1,8 +1,13 @@
 export const coletor = {
   nome: 'Edson',
   regiao: 'Boa Vista',
-  cargaMinima: 60, 
+  cargaMinima: 60,
+  // Vai no link de convite (S5.3): pelo código, o Caçuá sabe qual coletor trouxe o produtor.
+  codigo: 'EDSON',
 };
+
+// WhatsApp do Caçuá, só dígitos com 55 e DDD (S5.3). Por enquanto, um número de teste da equipe.
+export const numeroCacua = '5500000000000';
 
 export const precos = {
   goiaba: { preco: 60, kg: 25 },
