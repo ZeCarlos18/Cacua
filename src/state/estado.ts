@@ -15,11 +15,13 @@ export type EstadoCacua = {
   precos: Record<string, { preco: number; kg: number }>;
   /** Ids dos produtores já coletados em cada dia (S5.1), ex.: { '01/out': [3] }. */
   coletas: Record<string, number[]>;
+  /** Datas dos dias com a coleta confirmada (S5.1), ex.: ['30/set']. */
+  confirmados: string[];
 };
 
 /** Os valores do dados.js. É o começo do app e o que o restaurarPadrao devolve. */
 export function estadoInicial(): EstadoCacua {
-  return { agenda, custos, precos, coletas: { [rota.data]: rota.coletados } };
+  return { agenda, custos, precos, coletas: { [rota.data]: rota.coletados }, confirmados: [] };
 }
 
 function temDia(estado: EstadoCacua, data: string) {
@@ -55,6 +57,18 @@ export function comColeta(estado: EstadoCacua, data: string, produtor: number): 
   return { ...estado, coletas: { ...estado.coletas, [data]: [...doDia, produtor] } };
 }
 
+/** Confirma a coleta do dia, sem repetir. Se o dia não está na agenda, nada muda. */
+export function comConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
+  if (!temDia(estado, data) || estado.confirmados.includes(data)) return estado;
+  return { ...estado, confirmados: [...estado.confirmados, data] };
+}
+
+/** Desfaz a confirmação do dia. Se ele não estava confirmado, nada muda. */
+export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
+  if (!estado.confirmados.includes(data)) return estado;
+  return { ...estado, confirmados: estado.confirmados.filter((confirmado) => confirmado !== data) };
+}
+
 /**
  * O estado guardado no celular (S4.5), a partir do texto salvo. Devolve null quando não há nada
  * salvo ou quando o texto não serve, e aí o app usa o dados.js. Custos e preços que faltarem no
@@ -76,7 +90,8 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     !Array.isArray(salvo.agenda) ||
     !ehObjeto(salvo.custos) ||
     !ehObjeto(salvo.precos) ||
-    !ehObjeto(salvo.coletas)
+    !ehObjeto(salvo.coletas) ||
+    !Array.isArray(salvo.confirmados)
   ) {
     return null;
   }
@@ -87,5 +102,6 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     custos: { ...padrao.custos, ...salvo.custos },
     precos: { ...padrao.precos, ...salvo.precos },
     coletas: salvo.coletas,
+    confirmados: salvo.confirmados,
   };
 }
