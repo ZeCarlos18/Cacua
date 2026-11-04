@@ -60,10 +60,20 @@ export const styles = StyleSheet.create({
   linhaDoSelo: {
     flexDirection: 'row',
   },
-  recibo: {
+  botaoRecibo: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.two + Spacing.one,
+    borderRadius: Spacing.two + Spacing.one,
+    borderWidth: 1.5,
+    borderColor: Cacua.verde,
+    backgroundColor: Cacua.superficie,
+  },
+  botaoReciboTexto: {
     fontSize: 14,
-    lineHeight: 20,
-    color: Cacua.textoSecundario,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
   },
   botao: {
     minHeight: 44,

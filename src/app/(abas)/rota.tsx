@@ -27,6 +27,7 @@ export default function RotaScreen() {
     <Tela titulo="Rota do dia" descricao={subtituloDaRota(dia.dia, rota.saida)}>
       <Lista>
         <RotaDoDia
+          dia={dia}
           paradas={paradas}
           km={km}
           conta={calcularLucroDoDia({ ...dia, km }, precos, custos)}

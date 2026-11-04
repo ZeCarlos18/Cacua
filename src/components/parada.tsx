@@ -1,6 +1,7 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Share, Text, View } from 'react-native';
 
 import { Selo } from '@/components/selo';
+import { textoDasCaixas } from '@/utils/rota-do-dia';
 
 import { styles } from './parada.styles';
 
@@ -13,15 +14,27 @@ type ParadaProps = {
   fruta: string;
   caixas: number;
   coletada: boolean;
+  /** O texto do recibo (textoDoRecibo), que o "Mandar recibo" abre no compartilhar (S5.2). */
+  recibo: string;
   onRegistrar: () => void;
 };
 
 /**
  * Uma parada da Rota do dia (S3.2), como no Figma: o número no círculo, o sítio, o produtor e
  * "Goiaba · 12 caixas". Antes da coleta mostra o botão "Registrar coleta"; depois, o Selo
- * "Coletado" e "recibo enviado". Não guarda estado: quem sabe se está coletada é a tela (S3.3).
+ * "Coletado" e o botão "Mandar recibo" (S5.2). Não guarda estado: quem sabe se está coletada é a
+ * tela (S3.3).
  */
-export function Parada({ numero, sitio, produtor, fruta, caixas, coletada, onRegistrar }: ParadaProps) {
+export function Parada({
+  numero,
+  sitio,
+  produtor,
+  fruta,
+  caixas,
+  coletada,
+  recibo,
+  onRegistrar,
+}: ParadaProps) {
   return (
     <View style={styles.parada}>
       {/* accessible: no iOS e no Android, o leitor de tela lê o rótulo, e não o "✓" ou o número soltos. */}
@@ -48,7 +61,13 @@ export function Parada({ numero, sitio, produtor, fruta, caixas, coletada, onReg
             <View style={styles.linhaDoSelo}>
               <Selo texto="Coletado" cor="verde" />
             </View>
-            <Text style={styles.recibo}>recibo enviado</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Mandar recibo para ${produtor}`}
+              onPress={() => mandarRecibo(recibo)}
+              style={({ pressed }) => [styles.botaoRecibo, pressed && styles.botaoPressionado]}>
+              <Text style={styles.botaoReciboTexto}>Mandar recibo</Text>
+            </Pressable>
           </View>
         ) : (
           <Pressable
@@ -64,7 +83,14 @@ export function Parada({ numero, sitio, produtor, fruta, caixas, coletada, onReg
   );
 }
 
-/** "12 caixas", ou "1 caixa". */
-function textoDasCaixas(caixas: number) {
-  return `${caixas} ${caixas === 1 ? 'caixa' : 'caixas'}`;
+/**
+ * Abre o compartilhar do celular com o recibo pronto; o coletor escolhe o WhatsApp e o produtor.
+ * Na web, o compartilhar pode não existir: aí nada abre, e o app continua normal.
+ */
+async function mandarRecibo(recibo: string) {
+  try {
+    await Share.share({ message: recibo });
+  } catch (erro) {
+    console.warn('Não deu para abrir o compartilhar:', erro);
+  }
 }
