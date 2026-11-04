@@ -54,6 +54,17 @@ for (const falta of ['agenda', 'custos', 'precos', 'coletas', 'confirmados'] as 
 }
 conferir('Custos numa lista em vez de objeto volta null', estadoDoSalvo(JSON.stringify({ ...mudado, custos: [] })) === null);
 
+// O formato antigo (S4.5, com `coletados`) e coletas ou confirmações estragadas são ignorados (S5.1)
+const formatoAntigo: Record<string, unknown> = { ...mudado, coletados: [3, 2] };
+delete formatoAntigo.coletas;
+delete formatoAntigo.confirmados;
+conferir('Salvo no formato antigo (com coletados) volta null', estadoDoSalvo(JSON.stringify(formatoAntigo)) === null);
+conferir('Coletas numa lista em vez de objeto volta null', estadoDoSalvo(JSON.stringify({ ...mudado, coletas: [3] })) === null);
+conferir('Coletas de um dia que não são lista volta null', estadoDoSalvo(JSON.stringify({ ...mudado, coletas: { '01/out': 3 } })) === null);
+conferir('Coletas com texto no lugar do id volta null', estadoDoSalvo(JSON.stringify({ ...mudado, coletas: { '01/out': ['3'] } })) === null);
+conferir('Confirmados com número no lugar da data volta null', estadoDoSalvo(JSON.stringify({ ...mudado, confirmados: [30] })) === null);
+conferir('Coletas e confirmados vazios valem', estadoDoSalvo(JSON.stringify({ ...mudado, coletas: {}, confirmados: [] })) !== null);
+
 // Um campo novo numa versão futura do app: o que falta no salvo vem do dados.js
 const custosAntigos: Record<string, number> = { ...mudado.custos };
 delete custosAntigos.lucroMinimo;

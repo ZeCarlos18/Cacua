@@ -72,7 +72,9 @@ export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
 /**
  * O estado guardado no celular (S4.5), a partir do texto salvo. Devolve null quando não há nada
  * salvo ou quando o texto não serve, e aí o app usa o dados.js. Custos e preços que faltarem no
- * salvo (um campo novo numa versão futura do app) vêm do dados.js.
+ * salvo (um campo novo numa versão futura do app) vêm do dados.js. Desde o S5.1, as coletas de
+ * cada dia têm que ser listas de ids e as confirmações, listas de datas; o formato antigo, com
+ * `coletados`, não serve.
  */
 export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   if (!texto) return null;
@@ -85,13 +87,16 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   }
 
   const ehObjeto = (valor: unknown) => typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+  const ehListaDe = (valor: unknown, tipo: 'number' | 'string') =>
+    Array.isArray(valor) && valor.every((item) => typeof item === tipo);
   if (
     !ehObjeto(salvo) ||
     !Array.isArray(salvo.agenda) ||
     !ehObjeto(salvo.custos) ||
     !ehObjeto(salvo.precos) ||
     !ehObjeto(salvo.coletas) ||
-    !Array.isArray(salvo.confirmados)
+    !Object.values(salvo.coletas).every((doDia) => ehListaDe(doDia, 'number')) ||
+    !ehListaDe(salvo.confirmados, 'string')
   ) {
     return null;
   }
