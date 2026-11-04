@@ -13,13 +13,19 @@ export type EstadoCacua = {
   agenda: typeof agenda;
   custos: Custos;
   precos: Record<string, { preco: number; kg: number }>;
-  /** Ids dos produtores já coletados na rota do dia. */
-  coletados: number[];
+  /** Ids dos produtores já coletados em cada dia (S5.1), ex.: { '01/out': [3] }. */
+  coletas: Record<string, number[]>;
+  /** Datas dos dias com a coleta confirmada (S5.1), ex.: ['30/set']. */
+  confirmados: string[];
 };
 
 /** Os valores do dados.js. É o começo do app e o que o restaurarPadrao devolve. */
 export function estadoInicial(): EstadoCacua {
-  return { agenda, custos, precos, coletados: rota.coletados };
+  return { agenda, custos, precos, coletas: { [rota.data]: rota.coletados }, confirmados: [] };
+}
+
+function temDia(estado: EstadoCacua, data: string) {
+  return estado.agenda.some((dia) => dia.data === data);
 }
 
 /** Coloca o aviso no dia (ex.: '30/set'). Se o dia não está na agenda, nada muda. */
@@ -44,16 +50,31 @@ export function comPreco(estado: EstadoCacua, fruta: string, preco: number): Est
   return { ...estado, precos: { ...estado.precos, [fruta]: { ...atual, preco } } };
 }
 
-/** Marca o produtor como coletado, sem repetir. */
-export function comColeta(estado: EstadoCacua, produtor: number): EstadoCacua {
-  if (estado.coletados.includes(produtor)) return estado;
-  return { ...estado, coletados: [...estado.coletados, produtor] };
+/** Marca o produtor como coletado no dia, sem repetir. Se o dia não está na agenda, nada muda. */
+export function comColeta(estado: EstadoCacua, data: string, produtor: number): EstadoCacua {
+  const doDia = estado.coletas[data] ?? [];
+  if (!temDia(estado, data) || doDia.includes(produtor)) return estado;
+  return { ...estado, coletas: { ...estado.coletas, [data]: [...doDia, produtor] } };
+}
+
+/** Confirma a coleta do dia, sem repetir. Se o dia não está na agenda, nada muda. */
+export function comConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
+  if (!temDia(estado, data) || estado.confirmados.includes(data)) return estado;
+  return { ...estado, confirmados: [...estado.confirmados, data] };
+}
+
+/** Desfaz a confirmação do dia. Se ele não estava confirmado, nada muda. */
+export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
+  if (!estado.confirmados.includes(data)) return estado;
+  return { ...estado, confirmados: estado.confirmados.filter((confirmado) => confirmado !== data) };
 }
 
 /**
  * O estado guardado no celular (S4.5), a partir do texto salvo. Devolve null quando não há nada
  * salvo ou quando o texto não serve, e aí o app usa o dados.js. Custos e preços que faltarem no
- * salvo (um campo novo numa versão futura do app) vêm do dados.js.
+ * salvo (um campo novo numa versão futura do app) vêm do dados.js. Desde o S5.1, as coletas de
+ * cada dia têm que ser listas de ids e as confirmações, listas de datas; o formato antigo, com
+ * `coletados`, não serve.
  */
 export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   if (!texto) return null;
@@ -66,12 +87,16 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   }
 
   const ehObjeto = (valor: unknown) => typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+  const ehListaDe = (valor: unknown, tipo: 'number' | 'string') =>
+    Array.isArray(valor) && valor.every((item) => typeof item === tipo);
   if (
     !ehObjeto(salvo) ||
     !Array.isArray(salvo.agenda) ||
     !ehObjeto(salvo.custos) ||
     !ehObjeto(salvo.precos) ||
-    !Array.isArray(salvo.coletados)
+    !ehObjeto(salvo.coletas) ||
+    !Object.values(salvo.coletas).every((doDia) => ehListaDe(doDia, 'number')) ||
+    !ehListaDe(salvo.confirmados, 'string')
   ) {
     return null;
   }
@@ -81,6 +106,7 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     agenda: salvo.agenda,
     custos: { ...padrao.custos, ...salvo.custos },
     precos: { ...padrao.precos, ...salvo.precos },
-    coletados: salvo.coletados,
+    coletas: salvo.coletas,
+    confirmados: salvo.confirmados,
   };
 }
