@@ -13,13 +13,17 @@ export type EstadoCacua = {
   agenda: typeof agenda;
   custos: Custos;
   precos: Record<string, { preco: number; kg: number }>;
-  /** Ids dos produtores já coletados na rota do dia. */
-  coletados: number[];
+  /** Ids dos produtores já coletados em cada dia (S5.1), ex.: { '01/out': [3] }. */
+  coletas: Record<string, number[]>;
 };
 
 /** Os valores do dados.js. É o começo do app e o que o restaurarPadrao devolve. */
 export function estadoInicial(): EstadoCacua {
-  return { agenda, custos, precos, coletados: rota.coletados };
+  return { agenda, custos, precos, coletas: { [rota.data]: rota.coletados } };
+}
+
+function temDia(estado: EstadoCacua, data: string) {
+  return estado.agenda.some((dia) => dia.data === data);
 }
 
 /** Coloca o aviso no dia (ex.: '30/set'). Se o dia não está na agenda, nada muda. */
@@ -44,10 +48,11 @@ export function comPreco(estado: EstadoCacua, fruta: string, preco: number): Est
   return { ...estado, precos: { ...estado.precos, [fruta]: { ...atual, preco } } };
 }
 
-/** Marca o produtor como coletado, sem repetir. */
-export function comColeta(estado: EstadoCacua, produtor: number): EstadoCacua {
-  if (estado.coletados.includes(produtor)) return estado;
-  return { ...estado, coletados: [...estado.coletados, produtor] };
+/** Marca o produtor como coletado no dia, sem repetir. Se o dia não está na agenda, nada muda. */
+export function comColeta(estado: EstadoCacua, data: string, produtor: number): EstadoCacua {
+  const doDia = estado.coletas[data] ?? [];
+  if (!temDia(estado, data) || doDia.includes(produtor)) return estado;
+  return { ...estado, coletas: { ...estado.coletas, [data]: [...doDia, produtor] } };
 }
 
 /**
@@ -71,7 +76,7 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     !Array.isArray(salvo.agenda) ||
     !ehObjeto(salvo.custos) ||
     !ehObjeto(salvo.precos) ||
-    !Array.isArray(salvo.coletados)
+    !ehObjeto(salvo.coletas)
   ) {
     return null;
   }
@@ -81,6 +86,6 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     agenda: salvo.agenda,
     custos: { ...padrao.custos, ...salvo.custos },
     precos: { ...padrao.precos, ...salvo.precos },
-    coletados: salvo.coletados,
+    coletas: salvo.coletas,
   };
 }

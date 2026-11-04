@@ -30,13 +30,13 @@ function lucroDoDia(estado: EstadoCacua, data: string) {
 let mudado = estadoInicial();
 mudado = comAviso(mudado, '30/set', { produtor: 1, fruta: 'goiaba', caixas: 20 });
 mudado = comCustos(mudado, { diesel: 7.5 });
-mudado = comColeta(mudado, 2);
+mudado = comColeta(mudado, '01/out', 2);
 const lido = estadoDoSalvo(JSON.stringify(mudado));
 
 conferir('O estado salvo volta igual', JSON.stringify(lido) === JSON.stringify(mudado));
 conferir('O aviso continua: a quarta tem 38 caixas', lido?.agenda[0].avisos.reduce((soma, aviso) => soma + aviso.caixas, 0) === 38);
 conferir('O diesel continua em R$ 7,50', lido?.custos.diesel === 7.5);
-conferir('A coleta continua: Dona Maria e Seu Antônio', lido?.coletados.join(',') === '3,2');
+conferir('A coleta continua: Dona Maria e Seu Antônio na quinta', lido?.coletas['01/out'].join(',') === '3,2');
 conferir('As contas usam o salvo: a quinta com diesel a R$ 7,50 fica em R$ 483,62', lido !== null && lucroDoDia(lido, '01/out') === 483.62);
 
 // Nada salvo, ou salvo que não serve: o app usa o dados.js
@@ -44,7 +44,7 @@ conferir('Nada salvo (null) volta null', estadoDoSalvo(null) === null);
 conferir('Texto vazio volta null', estadoDoSalvo('') === null);
 conferir('Texto que não é JSON volta null', estadoDoSalvo('{agenda: [') === null);
 conferir('JSON que não é objeto volta null', estadoDoSalvo('[1, 2]') === null && estadoDoSalvo('"oi"') === null);
-for (const falta of ['agenda', 'custos', 'precos', 'coletados'] as const) {
+for (const falta of ['agenda', 'custos', 'precos', 'coletas'] as const) {
   const semCampo: Record<string, unknown> = { ...mudado };
   delete semCampo[falta];
   conferir(`Sem ${falta} volta null`, estadoDoSalvo(JSON.stringify(semCampo)) === null);

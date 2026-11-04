@@ -76,14 +76,27 @@ conferir(
 const semDia = comAviso(inicio, '30/fev', { produtor: 1, fruta: 'goiaba', caixas: 20 });
 conferir('Dia fora da agenda não muda nada', lucros(semDia) === lucrosDoFigma);
 
-// Coletas
-const coleta = comColeta(inicio, 2);
-conferir('Registrar coleta: entra o produtor', coleta.coletados.join(',') === '3,2');
-conferir('Coleta repetida não duplica', comColeta(coleta, 2) === coleta);
+// Coletas por dia (S5.1)
+conferir(
+  'Coletas começam com a quinta: { "01/out": [3] }',
+  JSON.stringify(inicio.coletas) === JSON.stringify({ '01/out': [3] }),
+);
+const coleta = comColeta(inicio, '30/set', 4);
+conferir(
+  'Coleta da Dona Lúcia na quarta: { "01/out": [3], "30/set": [4] }',
+  JSON.stringify(coleta.coletas) === JSON.stringify({ '01/out': [3], '30/set': [4] }),
+);
+conferir('A quinta não muda', coleta.coletas['01/out'].join(',') === '3');
+conferir('Coleta na quinta: entra o produtor', comColeta(inicio, '01/out', 2).coletas['01/out'].join(',') === '3,2');
+conferir('Coleta repetida não duplica', comColeta(coleta, '30/set', 4) === coleta);
+conferir('Coleta num dia fora da agenda não muda nada', comColeta(inicio, '30/fev', 4) === inicio);
 
 // Restaurar: nada acima pode ter mexido nos valores do dados.js
 conferir('Restaurar: os 4 lucros voltam', lucros(estadoInicial()) === lucrosDoFigma);
-conferir('Restaurar: as coletas voltam', estadoInicial().coletados.join(',') === '3');
+conferir(
+  'Restaurar: as coletas voltam a { "01/out": [3] }',
+  JSON.stringify(estadoInicial().coletas) === JSON.stringify({ '01/out': [3] }),
+);
 
 if (falhas > 0) {
   console.error(`\n${falhas} regra(s) do estado não batem com os cartões.`);
