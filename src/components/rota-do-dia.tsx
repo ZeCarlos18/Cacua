@@ -20,7 +20,7 @@ type RotaDoDiaProps = {
   paradas: ParadaDaRota[];
   km: number;
   conta: ReturnType<typeof calcularLucroDoDia>;
-  /** Ids dos produtores já coletados (começa com `rota.coletados`). */
+  /** Ids dos produtores já coletados no dia (as `coletas` do dia, S5.1). */
   coletados: number[];
   /** Nomes dos produtores que ficaram fora da rota por não ter posição no mapa. */
   semPosicao: string[];
@@ -87,7 +87,7 @@ export function RotaDoDia({
   );
 }
 
-/** Quando `rota.data` não está na agenda. */
+/** Quando o dia escolhido não está na agenda. */
 export function RotaNaoEncontrada() {
   return <Text style={styles.aviso}>Não achamos o dia desta rota na agenda.</Text>;
 }

@@ -7,6 +7,11 @@ import { textoDoKm } from '@/utils/conta';
 
 type ParadaComCaixas = { id: number; caixas: number };
 
+/** Texto da pílula de cada dia na aba Rota (S5.4): "Qua 30/set", "Sáb 03/out". */
+export function textoDoDia(dia: { dia: string; data: string }) {
+  return `${dia.dia.slice(0, 3)} ${dia.data}`;
+}
+
 /** "Rota de quinta · saída às 7h". */
 export function subtituloDaRota(dia: string, saida: string) {
   return `Rota de ${dia.toLowerCase()} · saída às ${saida}`;
