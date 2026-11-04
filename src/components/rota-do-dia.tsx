@@ -4,14 +4,18 @@ import { BarraCarga } from '@/components/barra-carga';
 import { MapaRota } from '@/components/mapa-rota';
 import { Parada } from '@/components/parada';
 import { Selo } from '@/components/selo';
+import { coletor } from '@/data/dados';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 import type { AreaDoMapa } from '@/utils/mapa-rota';
+import { textoDoRecibo } from '@/utils/recibo';
 import type { Parada as ParadaDaRota, Posicao } from '@/utils/rota';
 import { caixasColetadas, resumoDaRota, textoDoColetado, totalDeCaixas } from '@/utils/rota-do-dia';
 
 import { styles } from './rota-do-dia.styles';
 
 type RotaDoDiaProps = {
+  /** O dia da rota (ex.: Quinta 01/out), que vai no recibo de cada parada (S5.2). */
+  dia: { dia: string; data: string };
   /** As paradas na ordem da montarRota. */
   paradas: ParadaDaRota[];
   km: number;
@@ -31,6 +35,7 @@ type RotaDoDiaProps = {
  * paradas na ordem de visita. Não guarda estado: quem sabe o que foi coletado é a tela.
  */
 export function RotaDoDia({
+  dia,
   paradas,
   km,
   conta,
@@ -68,6 +73,7 @@ export function RotaDoDia({
               fruta={parada.fruta}
               caixas={parada.caixas}
               coletada={coletados.includes(parada.id)}
+              recibo={textoDoRecibo(dia, parada, coletor)}
               onRegistrar={() => onRegistrar(parada.id)}
             />
           </View>

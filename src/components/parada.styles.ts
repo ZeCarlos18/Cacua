@@ -54,16 +54,24 @@ export const styles = StyleSheet.create({
     color: Cacua.textoSecundario,
   },
   coletado: {
-    alignItems: 'flex-end',
+    // O Selo e o "Mandar recibo" alinhados pela esquerda, também quando descem para baixo do texto.
+    alignItems: 'flex-start',
     gap: Spacing.one,
   },
-  linhaDoSelo: {
-    flexDirection: 'row',
+  botaoRecibo: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.two + Spacing.one,
+    borderRadius: Spacing.two + Spacing.one,
+    borderWidth: 1.5,
+    borderColor: Cacua.verde,
+    backgroundColor: Cacua.superficie,
   },
-  recibo: {
+  botaoReciboTexto: {
     fontSize: 14,
-    lineHeight: 20,
-    color: Cacua.textoSecundario,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
   },
   botao: {
     minHeight: 44,
