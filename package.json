@@ -42,7 +42,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "conferir": "tsx scripts/conferir-rota.ts && tsx scripts/conferir-calculos.ts && tsx scripts/conferir-produtores.ts && tsx scripts/conferir-estado.ts && tsx scripts/conferir-custos.ts && tsx scripts/conferir-aviso.ts && tsx scripts/conferir-salvo.ts && tsx scripts/conferir-recibo.ts"
-  },
+    "conferir": "tsx scripts/conferir-rota.ts && tsx scripts/conferir-calculos.ts && tsx scripts/conferir-produtores.ts && tsx scripts/conferir-estado.ts && tsx scripts/conferir-custos.ts && tsx scripts/conferir-aviso.ts && tsx scripts/conferir-salvo.ts && tsx scripts/conferir-recibo.ts && tsx scripts/conferir-previsao.ts"
+  },  
   "private": true
 }

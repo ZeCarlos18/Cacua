@@ -1,4 +1,5 @@
 import { AvisoSemanaFraca } from '@/components/aviso-semana-fraca';
+import { GraficoPrevisao } from '@/components/grafico-previsao';
 import { Lista } from '@/components/lista';
 import { SemanasPrevisao } from '@/components/semanas-previsao';
 import { Tela } from '@/components/tela';
@@ -12,6 +13,7 @@ export default function PrevisaoScreen() {
   return (
     <Tela titulo="Previsão" descricao="Avisos já feitos + colheitas previstas.">
       <Lista>
+        <GraficoPrevisao semanas={previsao} cargaMinima={cargaMinima} />
         <SemanasPrevisao semanas={previsao} cargaMinima={cargaMinima} />
         {semanasFracas.map((semana) => (
           <AvisoSemanaFraca

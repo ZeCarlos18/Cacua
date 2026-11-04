@@ -7,11 +7,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { estadoDoSalvo, type EstadoCacua } from '@/state/estado';
 
-/** Onde o estado fica guardado. Se o formato mudar, troque o v1, e o app ignora o salvo antigo. */
-const CHAVE = 'cacua:estado:v1';
+/**
+ * Onde o estado fica guardado. Se o formato mudar, troque a versão (e passe a anterior para
+ * CHAVE_ANTIGA): o app ignora o salvo antigo. O v2 é o das coletas por dia (S5.1).
+ */
+const CHAVE = 'cacua:estado:v2';
+/** O formato do S4.5, com `coletados`. Ninguém lê mais; é apagado ao abrir o app. */
+const CHAVE_ANTIGA = 'cacua:estado:v1';
 
 /** O que foi salvo, ou null se não há nada (ou não deu para ler): aí o app usa o dados.js. */
 export async function carregarEstado() {
+  try {
+    await AsyncStorage.removeItem(CHAVE_ANTIGA);
+  } catch (erro) {
+    console.warn('Não deu para apagar o salvo antigo no celular:', erro);
+  }
+
   try {
     return estadoDoSalvo(await AsyncStorage.getItem(CHAVE));
   } catch {
