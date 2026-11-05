@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Cacua } from '@/constants/theme';
+import { AcessoProvider, useAcesso } from '@/state/acesso';
 import { CacuaProvider } from '@/state/cacua';
 
 SplashScreen.preventAutoHideAsync();
@@ -26,25 +27,47 @@ export const unstable_settings = {
   anchor: '(abas)',
 };
 
-// As abas ficam embaixo de tudo; telas como a Conta do dia (S2.4) abrem por cima, com botão de voltar.
 export default function RootLayout() {
   return (
     <ThemeProvider value={temaCacua}>
       <StatusBar style="dark" />
       <AnimatedSplashOverlay />
-      <CacuaProvider>
-        <Stack
-          screenOptions={{
-            headerTintColor: Cacua.verde,
-            headerTitleStyle: { color: Cacua.texto },
-            headerStyle: { backgroundColor: Cacua.superficie },
-          }}>
-          <Stack.Screen name="(abas)" options={{ headerShown: false }} />
-          <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
-          <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
-          <Stack.Screen name="produtor/[id]" options={{ title: 'Produtor', headerBackTitle: 'Produtores' }} />
-        </Stack>
-      </CacuaProvider>
+      <AcessoProvider>
+        <CacuaProvider>
+          <Navegacao />
+        </CacuaProvider>
+      </AcessoProvider>
     </ThemeProvider>
+  );
+}
+
+/**
+ * As abas ficam embaixo de tudo; telas como a Conta do dia (S2.4) abrem por cima, com botão de
+ * voltar. Rotas protegidas: sem login, só Entrar e Criar conta abrem; depois de entrar, essas
+ * duas somem e o app abre nas abas. Ao sair da conta, volta para Entrar.
+ */
+function Navegacao() {
+  const { coletor } = useAcesso();
+  const entrou = coletor !== null;
+
+  return (
+    <Stack
+      screenOptions={{
+        headerTintColor: Cacua.verde,
+        headerTitleStyle: { color: Cacua.texto },
+        headerStyle: { backgroundColor: Cacua.superficie },
+      }}>
+      <Stack.Protected guard={entrou}>
+        <Stack.Screen name="(abas)" options={{ headerShown: false }} />
+        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
+        <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
+        <Stack.Screen name="produtor/[id]" options={{ title: 'Produtor', headerBackTitle: 'Produtores' }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!entrou}>
+        <Stack.Screen name="entrar" options={{ headerShown: false }} />
+        <Stack.Screen name="cadastro" options={{ title: 'Criar conta', headerBackTitle: 'Entrar' }} />
+      </Stack.Protected>
+    </Stack>
   );
 }

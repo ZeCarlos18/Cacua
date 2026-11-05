@@ -1,12 +1,14 @@
 import { Pressable, Share, Text } from 'react-native';
 
-import { coletor, numeroCacua } from '@/data/dados';
+import { numeroCacua } from '@/data/dados';
+import { useColetor } from '@/state/acesso';
+import type { ColetorAtual } from '@/state/acesso-regras';
 import { linkDoConvite, textoDoConvite } from '@/utils/convite';
 
 import { styles } from './botao-convidar.styles';
 
 /** Abre o compartilhar do celular com o convite (S5.3), para o coletor mandar pelo WhatsApp. */
-async function convidarProdutor() {
+async function convidarProdutor(coletor: ColetorAtual) {
   const link = linkDoConvite(numeroCacua, coletor.codigo);
   try {
     await Share.share({ message: textoDoConvite(coletor, link) });
@@ -18,11 +20,14 @@ async function convidarProdutor() {
 
 /** Botão no fim da aba Produtores (S5.3) que manda o convite com o link do Caçuá. */
 export function BotaoConvidar() {
+  // O link leva o código de quem entrou no app (EDSON na conta de exemplo).
+  const coletor = useColetor();
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityHint="Abre o compartilhar com o link do Caçuá para mandar ao produtor"
-      onPress={convidarProdutor}
+      onPress={() => convidarProdutor(coletor)}
       style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
       <Text style={styles.texto}>Convidar produtor</Text>
     </Pressable>
