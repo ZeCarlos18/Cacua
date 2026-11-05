@@ -7,10 +7,13 @@ import { calcularLucroDoDia } from '@/utils/calculos';
 import { diaPeloId, tituloDaConta } from '@/utils/conta';
 import { diaComKm } from '@/utils/rota';
 
-/** Conta do dia (S2.4): abre pelo "Ver conta" da Agenda, em /conta/01-out. */
+/**
+ * Conta do dia (S2.4): abre pelo "Ver conta" da Agenda, em /conta/01-out. No fim, o coletor
+ * confirma a coleta do dia (S5.5), e a confirmação fica salva no celular (S5.1).
+ */
 export default function ContaScreen() {
   const { dia: id } = useLocalSearchParams<{ dia: string }>();
-  const { agenda, custos, precos } = useCacua();
+  const { agenda, custos, precos, confirmados, confirmarDia, desfazerConfirmacao } = useCacua();
   const dia = diaPeloId(agenda, id);
 
   if (!dia) {
@@ -33,6 +36,9 @@ export default function ContaScreen() {
         custos={custos}
         produtores={produtores}
         cargaMinima={coletor.cargaMinima}
+        confirmado={confirmados.includes(dia.data)}
+        onConfirmar={() => confirmarDia(dia.data)}
+        onDesfazer={() => desfazerConfirmacao(dia.data)}
       />
     </>
   );
