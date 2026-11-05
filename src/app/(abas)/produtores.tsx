@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { BotaoConvidar } from '@/components/botao-convidar';
 import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
@@ -47,6 +48,8 @@ export default function ProdutoresScreen() {
           <Text style={styles.negrito}>Ponto focal: {pontoFocal}.</Text> Registra os avisos de
           quem não usa WhatsApp, por ligação ou visita.
         </Text>
+
+        <BotaoConvidar />
       </Lista>
     </Tela>
   );
