@@ -7,14 +7,13 @@ import { textoDoKm } from '@/utils/conta';
 
 type ParadaComCaixas = { id: number; caixas: number };
 
-/** Texto da pílula de cada dia na aba Rota (S5.4): "Qua 30/set", "Sáb 03/out". */
-export function textoDoDia(dia: { dia: string; data: string }) {
-  return `${dia.dia.slice(0, 3)} ${dia.data}`;
-}
-
-/** "Rota de quinta · saída às 7h". */
-export function subtituloDaRota(dia: string, saida: string) {
-  return `Rota de ${dia.toLowerCase()} · saída às ${saida}`;
+/**
+ * "Rota de quinta · saída às 7h". Sem o horário de saída (só a rota do dados.js tem, S5.4), fica
+ * só "Rota de quarta".
+ */
+export function subtituloDaRota(dia: string, saida?: string) {
+  const rotaDoDia = `Rota de ${dia.toLowerCase()}`;
+  return saida ? `${rotaDoDia} · saída às ${saida}` : rotaDoDia;
 }
 
 /** "3 paradas · 47 caixas · cerca de 18,7 km ida e volta". */

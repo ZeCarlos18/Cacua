@@ -8,8 +8,9 @@ import { posto, produtores, rota } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
 import { areaDoMapa } from '@/utils/mapa-rota';
+import { rotuloDoDia } from '@/utils/aviso';
 import { montarRota } from '@/utils/rota';
-import { nomesDosProdutores, subtituloDaRota, textoDoDia } from '@/utils/rota-do-dia';
+import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
 
 /**
  * Rota do dia (S3.3): as paradas na ordem da montarRota e o "Registrar coleta" de cada uma. Desde
@@ -23,7 +24,7 @@ export default function RotaScreen() {
 
   const escolhaDoDia = (
     <Pilulas
-      opcoes={agenda.map((item) => ({ valor: item.data, texto: textoDoDia(item) }))}
+      opcoes={agenda.map((item) => ({ valor: item.data, texto: rotuloDoDia(item) }))}
       escolhida={data}
       onEscolher={setData}
     />
@@ -41,7 +42,10 @@ export default function RotaScreen() {
   const { paradas, km, semPosicao } = montarRota(dia, produtores, posto);
 
   return (
-    <Tela titulo="Rota do dia" descricao={subtituloDaRota(dia.dia, rota.saida)}>
+    // O horário de saída do dados.js é só o da rota de quinta; nos outros dias o app não sabe.
+    <Tela
+      titulo="Rota do dia"
+      descricao={subtituloDaRota(dia.dia, dia.data === rota.data ? rota.saida : undefined)}>
       {escolhaDoDia}
       <Lista>
         <RotaDoDia
