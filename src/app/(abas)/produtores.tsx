@@ -1,24 +1,13 @@
-import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { BotaoConvidar } from '@/components/botao-convidar';
 import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { coletor, numeroCacua, pontoFocal, produtores } from '@/data/dados';
+import { pontoFocal, produtores } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
-import { linkDoConvite, textoDoConvite } from '@/utils/convite';
 import { proximaColheita } from '@/utils/produtores';
-
-/** Abre o compartilhar do celular com o convite (S5.3), para o coletor mandar pelo WhatsApp. */
-async function convidarProdutor() {
-  const link = linkDoConvite(numeroCacua, coletor.codigo);
-  try {
-    await Share.share({ message: textoDoConvite(coletor, link) });
-  } catch (erro) {
-    // Cancelar o compartilhar não é erro. Isto só acontece num navegador sem compartilhar.
-    console.warn('Não deu para abrir o compartilhar:', erro);
-  }
-}
 
 export default function ProdutoresScreen() {
   const { agenda } = useCacua();
@@ -60,13 +49,7 @@ export default function ProdutoresScreen() {
           quem não usa WhatsApp, por ligação ou visita.
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityHint="Abre o compartilhar com o link do Caçuá para mandar ao produtor"
-          onPress={convidarProdutor}
-          style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
-          <Text style={styles.botaoTexto}>Convidar produtor</Text>
-        </Pressable>
+        <BotaoConvidar />
       </Lista>
     </Tela>
   );
@@ -130,20 +113,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: Cacua.verdeEscuro,
-  },
-  botao: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: Spacing.two + Spacing.one,
-    backgroundColor: Cacua.verde,
-  },
-  botaoPressionado: {
-    backgroundColor: Cacua.verdeEscuro,
-  },
-  botaoTexto: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: Cacua.superficie,
   },
 });
