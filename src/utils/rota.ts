@@ -35,6 +35,11 @@ function distancia(a: Posicao, b: Posicao) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+/** Os km em linha reta entre dois pontos do mapa ilustrativo (o posto e o Sítio Boa Vista: 4,7 km). */
+export function kmEntre(a: Posicao, b: Posicao) {
+  return distancia(a, b) * KM_POR_UNIDADE;
+}
+
 /**
  * Uma parada por sítio, na ordem dos avisos: os avisos do mesmo produtor se juntam (frutas sem
  * repetir, caixas somadas). Produtor sem cadastro ou sem posição fica de fora, em `semPosicao`.

@@ -42,6 +42,7 @@ export default function RootLayout() {
           <Stack.Screen name="(abas)" options={{ headerShown: false }} />
           <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
           <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
+          <Stack.Screen name="produtor/[id]" options={{ title: 'Produtor', headerBackTitle: 'Produtores' }} />
         </Stack>
       </CacuaProvider>
     </ThemeProvider>

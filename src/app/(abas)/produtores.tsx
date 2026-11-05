@@ -1,14 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BotaoConvidar } from '@/components/botao-convidar';
 import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { pontoFocal, produtores } from '@/data/dados';
+import { pontoFocal, posto, produtores } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { estadoInicial } from '@/state/estado';
-import { historicoDoProdutor, proximaColheita } from '@/utils/produtores';
+import { textoDoKm } from '@/utils/conta';
+import { historicoDoProdutor, hrefDoProdutor, proximaColheita } from '@/utils/produtores';
+import { kmEntre } from '@/utils/rota';
 
 export default function ProdutoresScreen() {
   const { agenda, coletas } = useCacua();
@@ -18,22 +21,37 @@ export default function ProdutoresScreen() {
   return (
     <Tela
       titulo="Produtores da região"
-      descricao="“Avisos cumpridos”: quantas vezes o produtor entregou o que avisou.">
+      descricao="“Avisos cumpridos”: quantas vezes o produtor entregou o que avisou. Toque no produtor para ver os detalhes.">
       <Lista>
         <View style={styles.cartao}>
           {produtores.map((produtor, i) => {
             const historico = historicoDoProdutor(produtor, coletas, coletasIniciais);
             return (
-              <View key={produtor.id} style={[styles.produtor, i > 0 && styles.divisoria]}>
+              <Pressable
+                key={produtor.id}
+                accessibilityRole="button"
+                accessibilityHint="Abre os detalhes do produtor"
+                onPress={() => router.push(hrefDoProdutor(produtor.id))}
+                style={({ pressed }) => [
+                  styles.produtor,
+                  i > 0 && styles.divisoria,
+                  pressed && styles.pressionado,
+                ]}>
                 <View style={styles.cabecalho}>
                   <Text style={styles.nome}>{produtor.nome}</Text>
-                  <Selo
-                    texto={produtor.canal}
-                    cor={produtor.canal === 'WhatsApp' ? 'verde' : 'vermelho'}
-                  />
+                  <View style={styles.direita}>
+                    <Selo
+                      texto={produtor.canal}
+                      cor={produtor.canal === 'WhatsApp' ? 'verde' : 'vermelho'}
+                    />
+                    <Text style={styles.seta} accessibilityElementsHidden importantForAccessibility="no">
+                      ›
+                    </Text>
+                  </View>
                 </View>
+                {/* A distância é em linha reta, no mapa ilustrativo da Rota (S3.4). */}
                 <Text style={styles.detalhe}>
-                  {produtor.sitio} · {produtor.frutas.join(', ')}
+                  {produtor.sitio} · {produtor.frutas.join(', ')} · {textoDoKm(kmEntre(posto, produtor.posicao))}
                 </Text>
                 <View style={styles.rodape}>
                   {/* Avisos cumpridos (S5.6): o histórico do dados.js mais as coletas registradas. */}
@@ -46,7 +64,7 @@ export default function ProdutoresScreen() {
                   {/* Próxima colheita (S3.5): "Quinta · 20 cx de manga", "Qui, sex e sáb" ou a previsão. */}
                   <Text style={styles.colheita}>{proximaColheita(produtor, agenda)}</Text>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -64,6 +82,8 @@ export default function ProdutoresScreen() {
 
 const styles = StyleSheet.create({
   cartao: {
+    // Sem o overflow, o fundo do produtor pressionado passa das bordas arredondadas.
+    overflow: 'hidden',
     borderRadius: Spacing.three,
     borderWidth: 1,
     borderColor: Cacua.borda,
@@ -76,6 +96,19 @@ const styles = StyleSheet.create({
   divisoria: {
     borderTopWidth: 1,
     borderTopColor: Cacua.borda,
+  },
+  pressionado: {
+    backgroundColor: Cacua.fundo,
+  },
+  direita: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  seta: {
+    fontSize: 24,
+    lineHeight: 26,
+    color: Cacua.textoSecundario,
   },
   cabecalho: {
     flexDirection: 'row',
