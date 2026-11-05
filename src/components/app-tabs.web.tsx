@@ -5,7 +5,8 @@ import { Cacua, Spacing } from '@/constants/theme';
 
 /**
  * Versão web das abas (para abrir no navegador com a tecla "w" no `npx expo start`).
- * Fica embaixo, como no celular, com as 5 abas dividindo a largura.
+ * Fica embaixo, como no celular, com as 5 abas dividindo a largura (Início, Agenda, Rota,
+ * Previsão e Produtores; os Custos abrem pelo Início).
  */
 export default function AppTabs() {
   return (
@@ -13,7 +14,10 @@ export default function AppTabs() {
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
-          <TabTrigger name="agenda" href="/" asChild>
+          <TabTrigger name="inicio" href="/" asChild>
+            <TabButton>Início</TabButton>
+          </TabTrigger>
+          <TabTrigger name="agenda" href="/agenda" asChild>
             <TabButton>Agenda</TabButton>
           </TabTrigger>
           <TabTrigger name="rota" href="/rota" asChild>
@@ -24,9 +28,6 @@ export default function AppTabs() {
           </TabTrigger>
           <TabTrigger name="produtores" href="/produtores" asChild>
             <TabButton>Produtores</TabButton>
-          </TabTrigger>
-          <TabTrigger name="custos" href="/custos" asChild>
-            <TabButton>Custos</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>

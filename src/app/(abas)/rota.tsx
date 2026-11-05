@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { Lista } from '@/components/lista';
@@ -7,6 +8,7 @@ import { Tela } from '@/components/tela';
 import { posto, produtores, rota } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
+import { diaPeloId } from '@/utils/conta';
 import { areaDoMapa } from '@/utils/mapa-rota';
 import { rotuloDoDia } from '@/utils/aviso';
 import { montarRota } from '@/utils/rota';
@@ -18,8 +20,16 @@ import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
  */
 export default function RotaScreen() {
   const { agenda, custos, precos, coletas, registrarColeta } = useCacua();
-  // Começa no dia da rota do dados.js (a quinta), como antes.
-  const [data, setData] = useState(rota.data);
+  // O Início abre a Rota já num dia (/rota?dia=01-out). Sem o dia, começa na rota do dados.js (a quinta).
+  const { dia: diaPedido } = useLocalSearchParams<{ dia?: string }>();
+  const [data, setData] = useState(() => diaPeloId(agenda, diaPedido ?? '')?.data ?? rota.data);
+  // A aba continua aberta entre uma visita e outra: se o Início pedir outro dia, troca o dia escolhido.
+  const [ultimoPedido, setUltimoPedido] = useState(diaPedido);
+  if (diaPedido !== ultimoPedido) {
+    setUltimoPedido(diaPedido);
+    const pedido = diaPeloId(agenda, diaPedido ?? '');
+    if (pedido) setData(pedido.data);
+  }
   const dia = agenda.find((item) => item.data === data);
 
   const escolhaDoDia = (

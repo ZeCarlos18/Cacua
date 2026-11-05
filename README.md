@@ -2,7 +2,15 @@
 
 O Caçuá é um app para o coletor de frutas que compra dos pequenos produtores da região e revende no Ceasa. Os produtores avisam quando vão colher (pelo WhatsApp ou pela ponto focal), e o app junta esses avisos numa agenda. Para cada dia, ele calcula se a viagem vale a pena: soma a venda no Ceasa e desconta o que vai para os produtores, a perda, o diesel e os outros custos. Também monta a melhor ordem das paradas, registra cada coleta, mostra a previsão das próximas semanas e deixa o coletor ajustar os próprios custos e preços.
 
-O app tem 5 abas: **Agenda**, **Rota**, **Previsão**, **Produtores** e **Custos**. Por enquanto, ele usa os dados de exemplo de `src/data/dados.js` (o coletor Edson, de Boa Vista, e 6 produtores).
+O app começa na tela **Entrar**. Depois do login, ele tem 5 abas: **Início** (o painel do coletor), **Agenda**, **Rota**, **Previsão** e **Produtores**. Os **Custos e preços** abrem pelo Início, porque o Android aceita no máximo 5 abas. Tocar num produtor abre os detalhes dele. Por enquanto, o app usa os dados de exemplo de `src/data/dados.js` (o coletor Edson, de Boa Vista, e 6 produtores).
+
+## Entrar no app
+
+- **Conta de exemplo:** na tela Entrar, toque em **Entrar com a conta de exemplo**. O app abre com o Edson, sem precisar de cadastro. É o jeito mais rápido de mostrar o protótipo.
+- **Criar conta:** nome, telefone (WhatsApp) com DDD, região e uma senha de pelo menos 6 letras ou números. Depois, é só entrar com o telefone e a senha.
+- **Sair:** o botão **Sair**, no topo das abas, volta para a tela Entrar. A agenda, as coletas e os custos continuam salvos.
+
+É um protótipo sem servidor: a conta fica só no celular (ou no navegador, na web). A senha não é guardada, só um resumo dela (SHA-256 com sal). Num app de verdade, a conta iria para um servidor.
 
 ## Instalar
 
@@ -93,7 +101,7 @@ As mudanças no código chegam ao app sem compilar de novo.
 npm run conferir
 ```
 
-Roda os scripts da pasta `scripts/` e compara as contas do app com os números do Figma: a ordem das paradas e os km da rota, o lucro de cada dia, a próxima colheita dos produtores, o estado do app, os custos editáveis, o formulário de novo aviso e o que fica salvo no celular. Cada linha mostra `OK` ou `FALHA`. Se um script falhar, o comando termina com erro e os scripts seguintes não rodam. Ele tem que continuar passando depois de qualquer mudança.
+Roda os scripts da pasta `scripts/` e compara as contas do app com os números do Figma: a ordem das paradas e os km da rota, o lucro de cada dia, a próxima colheita dos produtores, o estado do app, os custos editáveis, o formulário de novo aviso, o que fica salvo no celular, o recibo, a previsão, o convite, os detalhes do produtor, o login e o cadastro, e o painel do Início. Cada linha mostra `OK` ou `FALHA`. Se um script falhar, o comando termina com erro e os scripts seguintes não rodam. Ele tem que continuar passando depois de qualquer mudança.
 
 Antes de abrir um pull request, rode também:
 
@@ -106,10 +114,10 @@ npx expo lint
 
 | Pasta | O que tem |
 |---|---|
-| `src/app` | As telas. Cada arquivo é uma rota (Expo Router): as 5 abas ficam em `src/app/(abas)`, e telas como a Conta do dia e o Registrar aviso abrem por cima delas. |
+| `src/app` | As telas. Cada arquivo é uma rota (Expo Router): as 5 abas ficam em `src/app/(abas)`, e telas como a Conta do dia, o Registrar aviso, os detalhes do produtor e os Custos abrem por cima delas. `entrar.tsx` e `cadastro.tsx` são as únicas que abrem antes do login. |
 | `src/components` | Os componentes das telas (cartão do dia, parada, mapa, selo…), cada um com os estilos num `*.styles.ts` ao lado. |
 | `src/utils` | As contas e os textos: lucro do dia, rota, previsão, custos. |
-| `src/state` | O estado do app (S4.1): o `CacuaProvider` e o `useCacua()`, com a agenda, os custos, os preços e as coletas, e o que fica salvo no celular (S4.5). |
+| `src/state` | O estado do app (S4.1): o `CacuaProvider` e o `useCacua()`, com a agenda, os custos, os preços e as coletas, e o que fica salvo no celular (S4.5). O login fica no `AcessoProvider` (`acesso.tsx`), com o `useAcesso()` e o `useColetor()`, e as regras em `acesso-regras.ts`. |
 | `src/data` | Os dados de exemplo (`dados.js`), o ponto de partida do app. |
 | `src/constants` | As cores e os espaçamentos do Caçuá (`theme.ts`). |
 | `scripts` | Os scripts do `npm run conferir`. |

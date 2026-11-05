@@ -27,7 +27,7 @@ export default function CustosScreen() {
   // Muda a cada "Voltar aos valores do Figma": os campos renascem e perdem o que estava sendo digitado.
   const [geracao, setGeracao] = useState(0);
 
-  // Sair da aba com o teclado aberto tira o foco do campo, e o valor digitado vale na Agenda.
+  // Sair da tela com o teclado aberto tira o foco do campo, e o valor digitado vale na Agenda.
   useFocusEffect(useCallback(() => () => Keyboard.dismiss(), []));
 
   function voltarAoFigma() {
@@ -36,9 +36,12 @@ export default function CustosScreen() {
   }
 
   return (
+    // Desde o Início, Custos abre por cima das abas (o Android aceita no máximo 5 abas), com o
+    // título e o voltar na barra de cima.
     <Tela
       titulo="Custos e preços"
-      descricao="Ceasa Cariri · preço mais comum no boletim de 22/09/2026.">
+      descricao="Ceasa Cariri · preço mais comum no boletim de 22/09/2026."
+      cabecalhoNativo>
       <KeyboardAvoidingView behavior="padding" style={styles.teclado}>
         <Lista keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.grade}>

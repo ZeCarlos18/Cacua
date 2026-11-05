@@ -59,9 +59,10 @@ function Navegacao() {
       }}>
       <Stack.Protected guard={entrou}>
         <Stack.Screen name="(abas)" options={{ headerShown: false }} />
-        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
-        <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
+        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Voltar' }} />
+        <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Voltar' }} />
         <Stack.Screen name="produtor/[id]" options={{ title: 'Produtor', headerBackTitle: 'Produtores' }} />
+        <Stack.Screen name="custos" options={{ title: 'Custos e preços', headerBackTitle: 'Início' }} />
       </Stack.Protected>
 
       <Stack.Protected guard={!entrou}>

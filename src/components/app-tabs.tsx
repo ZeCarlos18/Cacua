@@ -3,7 +3,8 @@ import { NativeTabs } from 'expo-router/native-tabs';
 import { Cacua } from '@/constants/theme';
 
 /**
- * Barra de abas do Caçuá, na mesma ordem do Figma.
+ * Barra de abas do Caçuá. O Início (o painel do coletor) vem primeiro; depois a ordem do Figma.
+ * Os Custos saíram da barra porque o Android aceita no máximo 5 abas: eles abrem pelo Início.
  * Ícones: `sf` = SF Symbols (iPhone), `md` = Material Symbols (Android).
  */
 export default function AppTabs() {
@@ -18,6 +19,11 @@ export default function AppTabs() {
         selected: { color: Cacua.verde },
       }}>
       <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Início</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="agenda">
         <NativeTabs.Trigger.Label>Agenda</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
       </NativeTabs.Trigger>
@@ -40,14 +46,6 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon
           sf={{ default: 'person.2', selected: 'person.2.fill' }}
           md="groups"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="custos">
-        <NativeTabs.Trigger.Label>Custos</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'brazilianrealsign.circle', selected: 'brazilianrealsign.circle.fill' }}
-          md="payments"
         />
       </NativeTabs.Trigger>
     </NativeTabs>
