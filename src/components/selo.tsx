@@ -13,7 +13,7 @@ const COR_POR_SELO: Record<string, CorDoSelo> = {
 type SeloProps = {
   /** Um dos textos de SELOS (calculos.js), por exemplo o `selo` que sai do calcularLucroDoDia. */
   texto: string;
-  /** Cor fixa, para selos que não são do dia (o canal do produtor, "Avisado" ou "Previsto"). */
+  /** Cor fixa, para selos que não são do dia (o canal do produtor, "Avisado", "Previsto" ou "Confirmada"). */
   cor?: CorDoSelo;
 };
 

@@ -8,7 +8,7 @@ import { calcularLucroDoDia } from '@/utils/calculos';
 import { diaComKm } from '@/utils/rota';
 
 export default function AgendaScreen() {
-  const { agenda, custos, precos } = useCacua();
+  const { agenda, custos, precos, confirmados } = useCacua();
 
   return (
     <Tela titulo="Agenda" descricao="Próximas coletas e se vale a pena passar em cada dia.">
@@ -20,6 +20,7 @@ export default function AgendaScreen() {
             dia={dia}
             conta={calcularLucroDoDia(diaComKm(dia, produtores, posto), precos, custos)}
             cargaMinima={coletor.cargaMinima}
+            confirmado={confirmados.includes(dia.data)}
           />
         ))}
       </Lista>

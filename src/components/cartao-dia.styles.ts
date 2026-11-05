@@ -13,12 +13,18 @@ export const styles = StyleSheet.create({
   },
   cabecalho: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: Spacing.two,
   },
+  selos: {
+    alignItems: 'flex-end',
+    gap: Spacing.one,
+  },
   data: {
     flexShrink: 1,
+    // Centraliza a data com o primeiro selo (26 de altura, a data tem 24).
+    paddingTop: 1,
     fontSize: 18,
     lineHeight: 24,
     fontWeight: 700,
