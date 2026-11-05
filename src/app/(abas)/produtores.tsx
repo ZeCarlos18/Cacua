@@ -7,10 +7,13 @@ import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
 import { pontoFocal, produtores } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
-import { proximaColheita } from '@/utils/produtores';
+import { estadoInicial } from '@/state/estado';
+import { historicoDoProdutor, proximaColheita } from '@/utils/produtores';
 
 export default function ProdutoresScreen() {
-  const { agenda } = useCacua();
+  const { agenda, coletas } = useCacua();
+  // As coletas que já vêm do dados.js (a Dona Maria na quinta) já estão no histórico (S5.6).
+  const coletasIniciais = estadoInicial().coletas;
 
   return (
     <Tela
@@ -18,30 +21,34 @@ export default function ProdutoresScreen() {
       descricao="“Avisos cumpridos”: quantas vezes o produtor entregou o que avisou.">
       <Lista>
         <View style={styles.cartao}>
-          {produtores.map((produtor, i) => (
-            <View key={produtor.id} style={[styles.produtor, i > 0 && styles.divisoria]}>
-              <View style={styles.cabecalho}>
-                <Text style={styles.nome}>{produtor.nome}</Text>
-                <Selo
-                  texto={produtor.canal}
-                  cor={produtor.canal === 'WhatsApp' ? 'verde' : 'vermelho'}
-                />
-              </View>
-              <Text style={styles.detalhe}>
-                {produtor.sitio} · {produtor.frutas.join(', ')}
-              </Text>
-              <View style={styles.rodape}>
-                <Text style={styles.cumpridos}>
-                  Cumpridos{' '}
-                  <Text style={styles.negrito}>
-                    {produtor.cumpridos} de {produtor.avisos}
-                  </Text>
+          {produtores.map((produtor, i) => {
+            const historico = historicoDoProdutor(produtor, coletas, coletasIniciais);
+            return (
+              <View key={produtor.id} style={[styles.produtor, i > 0 && styles.divisoria]}>
+                <View style={styles.cabecalho}>
+                  <Text style={styles.nome}>{produtor.nome}</Text>
+                  <Selo
+                    texto={produtor.canal}
+                    cor={produtor.canal === 'WhatsApp' ? 'verde' : 'vermelho'}
+                  />
+                </View>
+                <Text style={styles.detalhe}>
+                  {produtor.sitio} · {produtor.frutas.join(', ')}
                 </Text>
-                {/* Próxima colheita (S3.5): "Quinta · 20 cx de manga", "Qui, sex e sáb" ou a previsão. */}
-                <Text style={styles.colheita}>{proximaColheita(produtor, agenda)}</Text>
+                <View style={styles.rodape}>
+                  {/* Avisos cumpridos (S5.6): o histórico do dados.js mais as coletas registradas. */}
+                  <Text style={styles.cumpridos}>
+                    Cumpridos{' '}
+                    <Text style={styles.negrito}>
+                      {historico.cumpridos} de {historico.avisos}
+                    </Text>
+                  </Text>
+                  {/* Próxima colheita (S3.5): "Quinta · 20 cx de manga", "Qui, sex e sáb" ou a previsão. */}
+                  <Text style={styles.colheita}>{proximaColheita(produtor, agenda)}</Text>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         <Text style={styles.pontoFocal}>
