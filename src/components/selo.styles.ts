@@ -30,6 +30,14 @@ export const coresDoSelo = {
     fundo: { backgroundColor: Cacua.vermelhoClaro },
     texto: { color: Cacua.vermelho },
   }),
+  /**
+   * Fundo verde forte, para o que já foi decidido, como "Confirmada" na Agenda (S5.5). Assim não se
+   * confunde com o "Vale a pena", que é verde claro.
+   */
+  cheio: StyleSheet.create({
+    fundo: { backgroundColor: Cacua.verde },
+    texto: { color: Cacua.superficie },
+  }),
   /** Sem julgamento de bom ou ruim, como "Previsto" na Previsão. */
   neutro: StyleSheet.create({
     fundo: { backgroundColor: Cacua.borda },

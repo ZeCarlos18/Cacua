@@ -2,6 +2,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BarraCarga } from '@/components/barra-carga';
+import { ConfirmarColeta } from '@/components/confirmar-coleta';
 import { Selo } from '@/components/selo';
 import { Spacing } from '@/constants/theme';
 import type { agenda, custos as custosDoColetor, produtores as produtoresDoColetor } from '@/data/dados';
@@ -17,13 +18,27 @@ type ContaDoDiaProps = {
   custos: typeof custosDoColetor;
   produtores: typeof produtoresDoColetor;
   cargaMinima: number;
+  /** Se a coleta do dia já foi confirmada (S5.5). */
+  confirmado: boolean;
+  onConfirmar: () => void;
+  onDesfazer: () => void;
 };
 
 /**
  * Conta do dia (S2.4), como a tela "Conta da quinta" do Figma: resumo do dia,
- * a conta do lucro, quanto cada caixa precisa render e quem avisou.
+ * a conta do lucro, quanto cada caixa precisa render e quem avisou. No fim, o
+ * "Confirmar coleta" (S5.5).
  */
-export function ContaDoDia({ dia, conta, custos, produtores, cargaMinima }: ContaDoDiaProps) {
+export function ContaDoDia({
+  dia,
+  conta,
+  custos,
+  produtores,
+  cargaMinima,
+  confirmado,
+  onConfirmar,
+  onDesfazer,
+}: ContaDoDiaProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -93,6 +108,8 @@ export function ContaDoDia({ dia, conta, custos, produtores, cargaMinima }: Cont
           </View>
         ))}
       </View>
+
+      <ConfirmarColeta confirmado={confirmado} onConfirmar={onConfirmar} onDesfazer={onDesfazer} />
     </ScrollView>
   );
 }
