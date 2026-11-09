@@ -51,8 +51,8 @@ type AcessoProviderProps = {
 
 /**
  * Conta do coletor (S6.1): os cadastros e quem entrou, guardados no celular. É o protótipo, sem
- * servidor, mas a senha nunca é guardada: só o resumo dela. As telas Entrar e Criar conta são do
- * S6.4; até lá, ninguém entra e o app abre como antes.
+ * servidor, mas a senha nunca é guardada: só o resumo dela. Sem ninguém dentro, o _layout mostra
+ * só Entrar e Criar conta (S6.4).
  */
 export function AcessoProvider({ children }: AcessoProviderProps) {
   const [cadastros, setCadastros] = useState<Cadastro[]>([]);
@@ -82,7 +82,7 @@ export function AcessoProvider({ children }: AcessoProviderProps) {
     };
   }, []);
 
-  // Enquanto lê o celular, as telas esperam: assim a tela Entrar (S6.4) não pisca para quem já entrou.
+  // Enquanto lê o celular, as telas esperam: assim a tela Entrar não pisca para quem já entrou.
   if (!carregado) return null;
 
   function entrarCom(nova: Sessao) {
@@ -128,8 +128,8 @@ export function useAcesso() {
 }
 
 /**
- * Quem entrou, para o topo, o recibo e o convite. Sem ninguém dentro (até o S6.4 colocar o
- * login), é o Edson do dados.js, então o app continua igual.
+ * Quem entrou, para o topo, o recibo e o convite. Essas telas só abrem depois de entrar; se
+ * ninguém entrou, devolve o Edson do dados.js.
  */
 export function useColetor() {
   return useAcesso().coletor ?? coletorDeExemplo();
