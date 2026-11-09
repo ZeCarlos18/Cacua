@@ -14,16 +14,15 @@ function conferir(nome: string, ok: boolean) {
   console.log(`${ok ? 'OK   ' : 'FALHA'} ${nome}`);
 }
 
+// Como no Início: o estado do useCacua() com os produtores e o posto do dados.js.
 function hoje(estado: EstadoCacua) {
   const dia = estado.agenda.find((item) => item.data === rota.data);
   if (!dia) throw new Error(`O dia de hoje (${rota.data}) não está na agenda.`);
-  const { precos, custos, coletas, confirmados } = estado;
-  return resumoDoDia(dia, produtores, posto, precos, custos, coletas, confirmados);
+  return resumoDoDia(dia, { ...estado, produtores, posto });
 }
 
 function semana(estado: EstadoCacua) {
-  const { agenda, precos, custos, coletas, confirmados } = estado;
-  return resumoDaSemana(agenda, produtores, posto, precos, custos, coletas, confirmados);
+  return resumoDaSemana(estado.agenda, { ...estado, produtores, posto });
 }
 
 // Hoje: a Quinta 01/out do dados.js
@@ -62,6 +61,22 @@ conferir(
   'Faltam confirmar quarta, sexta e sábado',
   diasSemConfirmacao(mudado.agenda, mudado.confirmados).map((dia) => dia.data).join(', ') ===
     '30/set, 02/out, 03/out',
+);
+
+// Produtor sem posição no mapa (Seu Raimundo, 10 caixas na quarta): fica fora da rota da quarta,
+// mas as caixas avisadas da semana contam com ele, como na Agenda.
+const semRaimundoNoMapa = produtores.map((produtor) =>
+  produtor.id === 5 ? { ...produtor, posicao: undefined } : produtor,
+);
+const quarta = inicio.agenda[0];
+const quartaSemRaimundo = resumoDoDia(quarta, { ...inicio, produtores: semRaimundoNoMapa, posto });
+conferir(
+  'Sem o Seu Raimundo no mapa: a rota da quarta tem 8 caixas, e a conta, as 18 avisadas',
+  quartaSemRaimundo.caixas === 8 && quartaSemRaimundo.conta.caixas === 18,
+);
+conferir(
+  'Sem o Seu Raimundo no mapa: a semana continua com 100 caixas avisadas',
+  resumoDaSemana(inicio.agenda, { ...inicio, produtores: semRaimundoNoMapa, posto }).caixas === 100,
 );
 
 // Semana fraca da Previsão

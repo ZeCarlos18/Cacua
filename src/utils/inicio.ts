@@ -11,23 +11,28 @@ import { montarRota } from '@/utils/rota';
 import { caixasColetadas, totalDeCaixas } from '@/utils/rota-do-dia';
 
 type DiaDaAgenda = { dia: string; data: string; avisos: Aviso[] };
-type Produtores = Parameters<typeof montarRota>[1];
-type Posto = Parameters<typeof montarRota>[2];
-type Precos = Parameters<typeof calcularLucroDoDia>[1];
-type Custos = Parameters<typeof calcularLucroDoDia>[2];
 
 /**
- * Resumo de um dia da agenda: paradas e caixas da rota (como na aba Rota), quanto já foi coletado,
- * o km da ida e volta, a conta do dia (lucro e selo) e se a coleta foi confirmada.
+ * O que as contas do Início usam, num objeto só para não trocar dois de lugar. No Início:
+ * `{ ...useCacua(), produtores, posto }`.
+ */
+export type DadosDoInicio = {
+  produtores: Parameters<typeof montarRota>[1];
+  posto: Parameters<typeof montarRota>[2];
+  precos: Parameters<typeof calcularLucroDoDia>[1];
+  custos: Parameters<typeof calcularLucroDoDia>[2];
+  coletas: Record<string, number[]>;
+  confirmados: string[];
+};
+
+/**
+ * Resumo de um dia da agenda: paradas e caixas da rota (como na aba Rota, sem os produtores fora do
+ * mapa), quanto já foi coletado, o km da ida e volta, a conta do dia (lucro, selo e todas as caixas
+ * avisadas) e se a coleta foi confirmada.
  */
 export function resumoDoDia(
   dia: DiaDaAgenda,
-  produtores: Produtores,
-  posto: Posto,
-  precos: Precos,
-  custos: Custos,
-  coletas: Record<string, number[]>,
-  confirmados: string[],
+  { produtores, posto, precos, custos, coletas, confirmados }: DadosDoInicio,
 ) {
   const { paradas, km } = montarRota(dia, produtores, posto);
   const coletadosDoDia = coletas[dia.data] ?? [];
@@ -45,28 +50,19 @@ export function resumoDoDia(
 }
 
 /**
- * Resumo da semana (todos os dias da agenda): caixas, lucro, quantos dias valem a pena e as paradas
- * coletadas. O lucro é a soma do lucro de cada dia, arredondada nos centavos.
+ * Resumo da semana (todos os dias da agenda): caixas avisadas, lucro, quantos dias valem a pena e
+ * as paradas coletadas. As caixas são todas as avisadas, como na Agenda, inclusive de produtor sem
+ * posição no mapa. O lucro é a soma do lucro de cada dia, arredondada nos centavos.
  */
-export function resumoDaSemana(
-  agenda: DiaDaAgenda[],
-  produtores: Produtores,
-  posto: Posto,
-  precos: Precos,
-  custos: Custos,
-  coletas: Record<string, number[]>,
-  confirmados: string[],
-) {
-  const dias = agenda.map((dia) =>
-    resumoDoDia(dia, produtores, posto, precos, custos, coletas, confirmados),
-  );
+export function resumoDaSemana(agenda: DiaDaAgenda[], dados: DadosDoInicio) {
+  const dias = agenda.map((dia) => resumoDoDia(dia, dados));
   const somar = (valor: (dia: (typeof dias)[number]) => number) =>
     dias.reduce((soma, dia) => soma + valor(dia), 0);
 
   return {
     dias: dias.length,
     diasQueValem: dias.filter((dia) => dia.conta.selo === SELOS.valeAPena).length,
-    caixas: somar((dia) => dia.caixas),
+    caixas: somar((dia) => dia.conta.caixas),
     lucro: Math.round(somar((dia) => dia.conta.lucro) * 100) / 100,
     paradas: somar((dia) => dia.paradas),
     paradasColetadas: somar((dia) => dia.paradasColetadas),
