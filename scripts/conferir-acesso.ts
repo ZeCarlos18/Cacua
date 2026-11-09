@@ -88,11 +88,12 @@ conferir('DDD começando com 0 não vale', limparTelefone('(088) 9999-0000') ===
 // Erros de cada campo
 const vazio = errosDoCadastro({ nome: '', telefone: '', regiao: '', senha: '', repetirSenha: '' }, []);
 conferir(
-  'Sem preencher nada: erro no nome, telefone, região e senha',
+  'Sem preencher nada: erro em todos os campos, até no "Repita a senha"',
   vazio?.nome === 'Digite o seu nome.' &&
     vazio.telefone === 'Digite o telefone com DDD.' &&
     vazio.regiao === 'Digite a sua região.' &&
-    vazio.senha === 'A senha precisa ter pelo menos 6 caracteres.',
+    vazio.senha === 'A senha precisa ter pelo menos 6 caracteres.' &&
+    vazio.repetirSenha === 'Repita a senha.',
 );
 conferir('Nome com 1 letra', errosDoCadastro({ ...jose, nome: 'J' }, [])?.nome === 'O nome precisa ter pelo menos 2 letras.');
 conferir('Nome "Zé" (2 letras, uma com acento) vale', errosDoCadastro({ ...jose, nome: 'Zé' }, []) === null);
@@ -111,7 +112,8 @@ conferir(
 conferir('Região só com espaços', errosDoCadastro({ ...jose, regiao: '   ' }, [])?.regiao === 'Digite a sua região.');
 conferir('Senha com 5 caracteres', errosDoCadastro({ ...jose, senha: 'goia5', repetirSenha: 'goia5' }, [])?.senha === 'A senha precisa ter pelo menos 6 caracteres.');
 conferir('Senha com símbolo vale (goiaba-25)', errosDoCadastro({ ...jose, senha: 'goiaba-25', repetirSenha: 'goiaba-25' }, []) === null);
-conferir('"Repita a senha" diferente', errosDoCadastro({ ...jose, repetirSenha: 'goiaba52' }, [])?.repetirSenha === 'As duas senhas não são iguais.');
+conferir('"Repita a senha" vazio com a senha preenchida', errosDoCadastro({ ...jose, repetirSenha: '' }, [])?.repetirSenha === 'Repita a senha.');
+conferir('"Repita a senha" diferente',errosDoCadastro({ ...jose, repetirSenha: 'goiaba52' }, [])?.repetirSenha === 'As duas senhas não são iguais.');
 
 // Senha fácil
 for (const facil of ['123456', '654321', '111111', 'aaaaaa', '0000000', '1234567', '98765432']) {

@@ -121,7 +121,9 @@ export function errosDoCadastro(campos: CamposDoCadastro, cadastros: Cadastro[])
     erros.senha = 'Essa senha é fácil de adivinhar. Escolha outra.';
   }
 
-  if (campos.repetirSenha !== campos.senha) erros.repetirSenha = 'As duas senhas não são iguais.';
+  // Vazio também é erro, para "Criar conta" sem preencher marcar todos os campos (S6.4).
+  if (!campos.repetirSenha) erros.repetirSenha = 'Repita a senha.';
+  else if (campos.repetirSenha !== campos.senha) erros.repetirSenha = 'As duas senhas não são iguais.';
 
   return Object.keys(erros).length > 0 ? erros : null;
 }
