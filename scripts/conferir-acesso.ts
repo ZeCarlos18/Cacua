@@ -130,6 +130,9 @@ conferir(
 // Código do convite e sal
 conferir('Código: "José Carlos" → JOSE', codigoDoConvite('José Carlos') === 'JOSE');
 conferir('Código: "  ângela maria " → ANGELA', codigoDoConvite('  ângela maria ') === 'ANGELA');
+conferir('O nome "1 Ana" é aceito no cadastro', !errosDoCadastro({ ...jose, nome: '1 Ana' }, [])?.nome);
+conferir('Código: "1 Ana" pula o 1 → ANA (não sai vazio)', codigoDoConvite('1 Ana') === 'ANA');
+conferir('Código: "- Zé" pula o traço → ZE', codigoDoConvite('- Zé') === 'ZE');
 const sal1 = novoSal();
 conferir('O sal tem 32 caracteres hexadecimais', /^[0-9a-f]{32}$/.test(sal1));
 conferir('Cada conta tem um sal diferente', sal1 !== novoSal());

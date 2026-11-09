@@ -167,9 +167,12 @@ export function cadastroQueConfere(telefone: string, senha: string, cadastros: C
   return cadastro;
 }
 
-/** O código do convite: o primeiro nome em maiúsculas e sem acento ("José Carlos" → JOSE). */
+/**
+ * O código do convite: o primeiro nome em maiúsculas e sem acento ("José Carlos" → JOSE). Pula o
+ * que não tem letra, para o código não sair vazio ("1 Ana" → ANA).
+ */
 export function codigoDoConvite(nome: string) {
-  const primeiro = nome.trim().split(/\s+/)[0] ?? '';
+  const primeiro = nome.trim().split(/\s+/).find((palavra) => contarLetras(palavra) > 0) ?? '';
   return semAcento(primeiro).toUpperCase().replace(/[^A-Z]/g, '');
 }
 
