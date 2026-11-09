@@ -27,4 +27,15 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.superficie,
   },
+  link: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  linkTexto: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: Cacua.verde,
+    textDecorationLine: 'underline',
+  },
 });

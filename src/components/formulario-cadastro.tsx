@@ -14,13 +14,15 @@ const VAZIO: CamposDoCadastro = { nome: '', telefone: '', regiao: '', senha: '',
 type FormularioCadastroProps = {
   /** Devolve os erros de cada campo, ou null se deu certo (e já entra). */
   onCriar: (campos: CamposDoCadastro) => ErrosDoCadastro | null;
+  /** Volta para Entrar; o link funciona mesmo quando a barra não tem a seta de voltar. */
+  onJaTenhoConta: () => void;
 };
 
 /**
  * Tela Criar conta (S6.4): nome, telefone, região, senha e "Repita a senha". Os erros aparecem
  * embaixo de cada campo ao tocar no botão, e o erro de um campo some quando ele é corrigido.
  */
-export function FormularioCadastro({ onCriar }: FormularioCadastroProps) {
+export function FormularioCadastro({ onCriar, onJaTenhoConta }: FormularioCadastroProps) {
   const insets = useSafeAreaInsets();
   const alturaDaBarra = useHeaderHeight();
   const [campos, setCampos] = useState(VAZIO);
@@ -97,6 +99,14 @@ export function FormularioCadastro({ onCriar }: FormularioCadastroProps) {
           onPress={criar}
           style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
           <Text style={styles.botaoTexto}>Criar conta e entrar</Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="link"
+          accessibilityHint="Volta para a tela Entrar"
+          onPress={onJaTenhoConta}
+          style={styles.link}>
+          <Text style={styles.linkTexto}>Já tenho conta · Entrar</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
