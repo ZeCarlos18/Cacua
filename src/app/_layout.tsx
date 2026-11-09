@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Cacua } from '@/constants/theme';
+import { AcessoProvider } from '@/state/acesso';
 import { CacuaProvider } from '@/state/cacua';
 
 SplashScreen.preventAutoHideAsync();
@@ -32,18 +33,21 @@ export default function RootLayout() {
     <ThemeProvider value={temaCacua}>
       <StatusBar style="dark" />
       <AnimatedSplashOverlay />
-      <CacuaProvider>
-        <Stack
-          screenOptions={{
-            headerTintColor: Cacua.verde,
-            headerTitleStyle: { color: Cacua.texto },
-            headerStyle: { backgroundColor: Cacua.superficie },
-          }}>
-          <Stack.Screen name="(abas)" options={{ headerShown: false }} />
-          <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
-          <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
-        </Stack>
-      </CacuaProvider>
+      {/* A conta do coletor (S6.1) fica por fora: quem entrou vale para todas as telas. */}
+      <AcessoProvider>
+        <CacuaProvider>
+          <Stack
+            screenOptions={{
+              headerTintColor: Cacua.verde,
+              headerTitleStyle: { color: Cacua.texto },
+              headerStyle: { backgroundColor: Cacua.superficie },
+            }}>
+            <Stack.Screen name="(abas)" options={{ headerShown: false }} />
+            <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
+            <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
+          </Stack>
+        </CacuaProvider>
+      </AcessoProvider>
     </ThemeProvider>
   );
 }
