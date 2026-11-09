@@ -4,7 +4,7 @@ import { BarraCarga } from '@/components/barra-carga';
 import { MapaRota } from '@/components/mapa-rota';
 import { Parada } from '@/components/parada';
 import { Selo } from '@/components/selo';
-import { coletor } from '@/data/dados';
+import { useColetor } from '@/state/acesso';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 import type { AreaDoMapa } from '@/utils/mapa-rota';
 import { textoDoRecibo } from '@/utils/recibo';
@@ -45,6 +45,8 @@ export function RotaDoDia({
   area,
   onRegistrar,
 }: RotaDoDiaProps) {
+  // O recibo sai com o nome de quem entrou (S6.4): "Coletado por José Carlos".
+  const coletor = useColetor();
   const total = totalDeCaixas(paradas);
   const coletadas = caixasColetadas(paradas, coletados);
 

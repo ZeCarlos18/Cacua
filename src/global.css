@@ -7,3 +7,8 @@
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
 }
+
+/* O Edge põe um olho próprio nos campos de senha; o CampoTexto (S6.4) já tem o "Mostrar". */
+input::-ms-reveal {
+  display: none;
+}
