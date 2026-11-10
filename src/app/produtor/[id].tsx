@@ -22,7 +22,8 @@ import { kmEntre } from '@/utils/rota';
  */
 export default function ProdutorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { agenda, precos, custos, coletas, confirmados } = useCacua();
+  const estado = useCacua();
+  const { agenda, custos, coletas } = estado;
   const produtor = produtores.find((item) => String(item.id) === id);
 
   if (!produtor) {
@@ -35,7 +36,7 @@ export default function ProdutorScreen() {
 
   // Os avisos cumpridos somam as coletas registradas no app, como na aba Produtores (S5.6).
   const historico = historicoDoProdutor(produtor, coletas, estadoInicial().coletas);
-  const avisos = avisosDoProdutor(produtor, agenda, precos, custos.pagoProdutor, coletas, confirmados);
+  const avisos = avisosDoProdutor(produtor, estado);
 
   return (
     <Tela titulo={produtor.nome} cabecalhoNativo>

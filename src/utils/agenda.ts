@@ -49,3 +49,8 @@ export function idDoDia(data: string) {
 export function hrefDaConta(data: string): Href {
   return `/conta/${idDoDia(data)}`;
 }
+
+/** Endereço da aba Rota já no dia (S6.5): /rota?dia=01-out. */
+export function hrefDaRota(data: string): Href {
+  return { pathname: '/rota', params: { dia: idDoDia(data) } };
+}

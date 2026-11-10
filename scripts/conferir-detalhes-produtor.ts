@@ -29,14 +29,7 @@ function produtor(nome: string) {
 
 // Como nos detalhes: o estado do useCacua() (agenda, preços, custos, coletas e confirmações).
 function avisos(nome: string, estado: EstadoCacua) {
-  return avisosDoProdutor(
-    produtor(nome),
-    estado.agenda,
-    estado.precos,
-    estado.custos.pagoProdutor,
-    estado.coletas,
-    estado.confirmados,
-  );
+  return avisosDoProdutor(produtor(nome), estado);
 }
 
 // Distância do posto, em linha reta
@@ -92,6 +85,10 @@ conferir(
   francisco.length === 0 && totalDosAvisos(francisco).caixas === 0 && totalDosAvisos(francisco).valor === 0,
 );
 
+// O valor sai arredondado nos centavos (12 × 42 × 0,8 dá 403,20000000000005 sem arredondar)
+const bananaDoPedro = avisos('Seu Pedro', inicio).find((a) => a.fruta === 'banana');
+conferir('Seu Pedro: banana 12 cx na sexta = 403,2 certinho', bananaDoPedro?.valor === 403.2);
+
 // Situação de cada aviso
 const mangaDaMaria = avisos('Dona Maria', inicio).find((a) => a.data === '01/out');
 conferir('A manga da Dona Maria na quinta já vem "coletado"', mangaDaMaria?.situacao === 'coletado');
@@ -118,14 +115,12 @@ conferir(
 );
 
 // Fruta sem preço do Ceasa (o coco): aparece, mas não soma no valor
-const comCoco = avisosDoProdutor(
-  produtor('Seu Pedro'),
-  [{ dia: 'Domingo', data: '04/out', avisos: [{ produtor: 6, fruta: 'coco', caixas: 5 }] }],
-  inicio.precos,
-  inicio.custos.pagoProdutor,
-  {},
-  [],
-);
+const comCoco = avisosDoProdutor(produtor('Seu Pedro'), {
+  ...inicio,
+  agenda: [{ dia: 'Domingo', data: '04/out', avisos: [{ produtor: 6, fruta: 'coco', caixas: 5 }] }],
+  coletas: {},
+  confirmados: [],
+});
 conferir(
   'Coco sem preço: preço e valor null, e o total soma só as caixas',
   comCoco[0]?.precoDaCaixa === null &&

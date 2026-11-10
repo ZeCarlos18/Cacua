@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { Lista } from '@/components/lista';
 import { Pilulas } from '@/components/pilulas';
@@ -8,25 +8,30 @@ import { posto, produtores, rota } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
 import { areaDoMapa } from '@/utils/mapa-rota';
+import { idDoDia } from '@/utils/agenda';
 import { rotuloDoDia } from '@/utils/aviso';
+import { diaPeloId } from '@/utils/conta';
 import { montarRota } from '@/utils/rota';
 import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
 
 /**
  * Rota do dia (S3.3): as paradas na ordem da montarRota e o "Registrar coleta" de cada uma. Desde
  * o S5.4, o coletor escolhe o dia nas pílulas; cada dia tem a sua rota, o seu km e as suas coletas.
+ *
+ * O dia escolhido fica no endereço (/rota?dia=01-out, S6.5): o "Abrir a rota" do Início troca o
+ * dia mesmo se a aba já estava aberta em outro, e as pílulas só atualizam o endereço.
  */
 export default function RotaScreen() {
   const { agenda, custos, precos, coletas, registrarColeta } = useCacua();
-  // Começa no dia da rota do dados.js (a quinta), como antes.
-  const [data, setData] = useState(rota.data);
-  const dia = agenda.find((item) => item.data === data);
+  const { dia: id } = useLocalSearchParams<{ dia?: string }>();
+  // Sem dia no endereço (ou com um que não está na agenda), começa no dia da rota do dados.js (a quinta).
+  const dia = (id ? diaPeloId(agenda, id) : undefined) ?? agenda.find((item) => item.data === rota.data);
 
   const escolhaDoDia = (
     <Pilulas
       opcoes={agenda.map((item) => ({ valor: item.data, texto: rotuloDoDia(item) }))}
-      escolhida={data}
-      onEscolher={setData}
+      escolhida={dia?.data ?? null}
+      onEscolher={(data) => router.setParams({ dia: idDoDia(data) })}
     />
   );
 
