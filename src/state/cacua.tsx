@@ -2,11 +2,13 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 
 import {
   comAviso,
+  comCaixasDoAviso,
   comColeta,
   comConfirmacao,
   comCustos,
   comPreco,
   estadoInicial,
+  semAviso,
   semConfirmacao,
   type Custos,
   type EstadoCacua,
@@ -17,6 +19,10 @@ import type { Aviso } from '@/utils/agenda';
 type ValorCacua = EstadoCacua & {
   /** Coloca o aviso no dia (ex.: '30/set'). */
   adicionarAviso: (data: string, aviso: Aviso) => void;
+  /** Troca as caixas do aviso da posição no dia (S7.2), ex.: ('03/out', 0, 15). */
+  mudarCaixasDoAviso: (data: string, posicao: number, caixas: number) => void;
+  /** Tira o aviso da posição no dia (S7.2); o dia continua na agenda. */
+  tirarAviso: (data: string, posicao: number) => void;
   /** Muda só os campos enviados (ex.: { diesel: 7.5 }). */
   atualizarCustos: (mudancas: Partial<Custos>) => void;
   /** Muda o preço da caixa (ex.: 'banana', 50). */
@@ -73,6 +79,9 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
   const valor: ValorCacua = {
     ...estado,
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
+    mudarCaixasDoAviso: (data, posicao, caixas) =>
+      setEstado((atual) => comCaixasDoAviso(atual, data, posicao, caixas)),
+    tirarAviso: (data, posicao) => setEstado((atual) => semAviso(atual, data, posicao)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
     atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
     registrarColeta: (data, produtor) => setEstado((atual) => comColeta(atual, data, produtor)),

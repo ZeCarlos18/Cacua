@@ -6,6 +6,7 @@
 
 import { agenda, custos, precos, rota } from '@/data/dados';
 import type { Aviso } from '@/utils/agenda';
+import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
 
 export type Custos = typeof custos;
 
@@ -36,6 +37,51 @@ export function comAviso(estado: EstadoCacua, data: string, aviso: Aviso): Estad
       dia.data === data ? { ...dia, avisos: [...dia.avisos, aviso] } : dia,
     ),
   };
+}
+
+/** Troca o aviso da posição (0, 1, 2…) na lista do dia pelo que a função devolver (null tira). */
+function comAvisoDaPosicao(
+  estado: EstadoCacua,
+  data: string,
+  posicao: number,
+  trocar: (aviso: Aviso) => Aviso | null,
+): EstadoCacua {
+  return {
+    ...estado,
+    agenda: estado.agenda.map((dia) => {
+      if (dia.data !== data) return dia;
+      const avisos = dia.avisos.flatMap((aviso, i) => {
+        if (i !== posicao) return [aviso];
+        const novo = trocar(aviso);
+        return novo ? [novo] : [];
+      });
+      return { ...dia, avisos };
+    }),
+  };
+}
+
+/**
+ * Troca as caixas do aviso (S7.2), quando o produtor colheu mais ou menos. As caixas têm que ser
+ * inteiras e maiores que zero, como no Registrar aviso. Com motivo para não mudar (dia confirmado
+ * ou produtor já coletado), nada muda.
+ */
+export function comCaixasDoAviso(
+  estado: EstadoCacua,
+  data: string,
+  posicao: number,
+  caixas: number,
+): EstadoCacua {
+  if (!caixasValem(caixas) || motivoParaNaoMudar(estado, data, posicao)) return estado;
+  return comAvisoDaPosicao(estado, data, posicao, (aviso) => ({ ...aviso, caixas }));
+}
+
+/**
+ * Tira o aviso do dia (S7.2), quando o produtor não vai colher. O dia continua na agenda, mesmo
+ * sem nenhum aviso. Com motivo para não mudar, nada muda.
+ */
+export function semAviso(estado: EstadoCacua, data: string, posicao: number): EstadoCacua {
+  if (motivoParaNaoMudar(estado, data, posicao)) return estado;
+  return comAvisoDaPosicao(estado, data, posicao, () => null);
 }
 
 /** Muda só os custos enviados (ex.: { diesel: 7.5 }). */

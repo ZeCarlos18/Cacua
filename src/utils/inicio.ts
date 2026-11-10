@@ -52,10 +52,12 @@ export function resumoDoDia(
 /**
  * Resumo da semana (todos os dias da agenda): caixas avisadas, lucro, quantos dias valem a pena e
  * as paradas coletadas. As caixas são todas as avisadas, como na Agenda, inclusive de produtor sem
- * posição no mapa. O lucro é a soma do lucro de cada dia, arredondada nos centavos.
+ * posição no mapa. O lucro é a soma do lucro de cada dia, arredondada nos centavos. Dia sem aviso
+ * fica de fora (S7.2).
  */
 export function resumoDaSemana(agenda: DiaDaAgenda[], dados: DadosDoInicio) {
-  const dias = agenda.map((dia) => resumoDoDia(dia, dados));
+  // Dia sem aviso não tem viagem, então não soma os outros custos (S7.2).
+  const dias = agenda.filter(temAviso).map((dia) => resumoDoDia(dia, dados));
   const somar = (valor: (dia: (typeof dias)[number]) => number) =>
     dias.reduce((soma, dia) => soma + valor(dia), 0);
 
@@ -69,9 +71,20 @@ export function resumoDaSemana(agenda: DiaDaAgenda[], dados: DadosDoInicio) {
   };
 }
 
-/** Os dias da agenda que ainda não tiveram a coleta confirmada, na ordem da agenda. */
-export function diasSemConfirmacao<T extends { data: string }>(agenda: T[], confirmados: string[]) {
-  return agenda.filter((dia) => !confirmados.includes(dia.data));
+/**
+ * Os dias da agenda que ainda não tiveram a coleta confirmada, na ordem da agenda. Dia sem aviso
+ * não tem o que confirmar (S7.2).
+ */
+export function diasSemConfirmacao<T extends { data: string; avisos: unknown[] }>(
+  agenda: T[],
+  confirmados: string[],
+) {
+  return agenda.filter((dia) => temAviso(dia) && !confirmados.includes(dia.data));
+}
+
+/** O dia tem pelo menos um aviso (S7.2): quando todos saem, o dia fica na agenda, mas sem viagem. */
+function temAviso(dia: { avisos: unknown[] }) {
+  return dia.avisos.length > 0;
 }
 
 /** A primeira semana da Previsão que não enche nenhuma viagem, ou null se todas enchem. */
