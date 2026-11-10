@@ -1,7 +1,7 @@
 import { Lista } from '@/components/lista';
 import { PainelInicio } from '@/components/painel-inicio';
 import { Tela } from '@/components/tela';
-import { coletor, posto, previsao, produtores, rota } from '@/data/dados';
+import { coletor, posto, previsao, rota } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { diasSemConfirmacao, primeiraSemanaFraca, resumoDaSemana, resumoDoDia } from '@/utils/inicio';
 
@@ -11,7 +11,8 @@ import { diasSemConfirmacao, primeiraSemanaFraca, resumoDaSemana, resumoDoDia } 
  */
 export default function InicioScreen() {
   const estado = useCacua();
-  const dados = { ...estado, produtores, posto };
+  // Os produtores vêm do estado (S7.1), junto com a agenda e as coletas.
+  const dados = { ...estado, posto };
   const hoje = estado.agenda.find((dia) => dia.data === rota.data);
 
   return (

@@ -14,7 +14,7 @@ type DiaDaAgenda = { dia: string; data: string; avisos: Aviso[] };
 
 /**
  * O que as contas do Início usam, num objeto só para não trocar dois de lugar. No Início:
- * `{ ...useCacua(), produtores, posto }`.
+ * `{ ...useCacua(), posto }` (os produtores vêm do estado desde o S7.1).
  */
 export type DadosDoInicio = {
   produtores: Parameters<typeof montarRota>[1];

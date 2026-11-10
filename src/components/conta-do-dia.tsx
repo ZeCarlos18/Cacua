@@ -5,7 +5,8 @@ import { BarraCarga } from '@/components/barra-carga';
 import { ConfirmarColeta } from '@/components/confirmar-coleta';
 import { Selo } from '@/components/selo';
 import { Spacing } from '@/constants/theme';
-import type { agenda, custos as custosDoColetor, produtores as produtoresDoColetor } from '@/data/dados';
+import type { agenda, custos as custosDoColetor } from '@/data/dados';
+import type { Produtor } from '@/state/estado';
 import { custoPorCaixa, quemAvisou, textoDaPorcentagem, textoDoKm } from '@/utils/conta';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 
@@ -16,7 +17,8 @@ type ContaDoDiaProps = {
   dia: (typeof agenda)[number] & { km: number };
   conta: ReturnType<typeof calcularLucroDoDia>;
   custos: typeof custosDoColetor;
-  produtores: typeof produtoresDoColetor;
+  /** Os produtores do estado (S7.1), para o "Quem avisou". */
+  produtores: Produtor[];
   cargaMinima: number;
   /** Se a coleta do dia já foi confirmada (S5.5). */
   confirmado: boolean;
