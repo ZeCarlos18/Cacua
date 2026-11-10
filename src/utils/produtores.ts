@@ -145,7 +145,5 @@ export function comoAvisa(canal: string, pontoFocal: string) {
 
 /** O endereço dos detalhes do produtor (S6.3), que a tela do S6.6 abre: 4 → "/produtor/4". */
 export function hrefDoProdutor(id: number): Href {
-  // A tela src/app/produtor/[id].tsx chega no S6.6; até lá, o Expo Router não conhece a rota e
-  // recusa o endereço. Com a tela criada, o "as Href" pode sair.
-  return `/produtor/${id}` as Href;
+  return `/produtor/${id}`;
 }
