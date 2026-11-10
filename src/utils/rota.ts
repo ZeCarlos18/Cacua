@@ -36,6 +36,14 @@ function distancia(a: Posicao, b: Posicao) {
 }
 
 /**
+ * Os km em linha reta entre dois pontos do mapa ilustrativo (S6.3), com a mesma conta da
+ * montarRota. Do posto ao Sítio Pau d'Arco: 7,5 km. Sai com o valor completo; a tela arredonda.
+ */
+export function kmEntre(a: Posicao, b: Posicao) {
+  return distancia(a, b) * KM_POR_UNIDADE;
+}
+
+/**
  * Uma parada por sítio, na ordem dos avisos: os avisos do mesmo produtor se juntam (frutas sem
  * repetir, caixas somadas). Produtor sem cadastro ou sem posição fica de fora, em `semPosicao`.
  */
