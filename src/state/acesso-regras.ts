@@ -7,6 +7,7 @@
 
 import { coletor as edson } from '@/data/dados';
 import { sha256 } from '@/utils/sha256';
+import { contarLetras, semAcento } from '@/utils/texto';
 
 export type CamposDoCadastro = {
   nome: string;
@@ -42,27 +43,6 @@ export type Coletor = {
 
 const SENHAS_FACEIS = ['123456', '654321', '111111'];
 const TAMANHO_MINIMO_DA_SENHA = 6;
-
-const SEM_ACENTO: Record<string, string> = {
-  á: 'a', à: 'a', â: 'a', ã: 'a', ä: 'a', é: 'e', è: 'e', ê: 'e', ë: 'e', í: 'i', ì: 'i', î: 'i',
-  ï: 'i', ó: 'o', ò: 'o', ô: 'o', õ: 'o', ö: 'o', ú: 'u', ù: 'u', û: 'u', ü: 'u', ç: 'c', ñ: 'n',
-};
-
-/** "José" → "Jose". Sem o normalize, que nem todo motor de JavaScript do celular tem. */
-function semAcento(texto: string) {
-  return [...texto]
-    .map((letra) => {
-      const minuscula = letra.toLowerCase();
-      const trocada = SEM_ACENTO[minuscula];
-      if (!trocada) return letra;
-      return letra === minuscula ? trocada : trocada.toUpperCase();
-    })
-    .join('');
-}
-
-function contarLetras(texto: string) {
-  return (semAcento(texto).match(/[a-z]/gi) ?? []).length;
-}
 
 /**
  * O telefone só com os números, com DDD: "(88) 99999-0000" e "+55 88 99999-0000" → 88999990000.
