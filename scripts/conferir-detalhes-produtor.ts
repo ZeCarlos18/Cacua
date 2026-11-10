@@ -29,14 +29,7 @@ function produtor(nome: string) {
 
 // Como nos detalhes: o estado do useCacua() (agenda, preços, custos, coletas e confirmações).
 function avisos(nome: string, estado: EstadoCacua) {
-  return avisosDoProdutor(
-    produtor(nome),
-    estado.agenda,
-    estado.precos,
-    estado.custos.pagoProdutor,
-    estado.coletas,
-    estado.confirmados,
-  );
+  return avisosDoProdutor(produtor(nome), estado);
 }
 
 // Distância do posto, em linha reta
@@ -122,14 +115,12 @@ conferir(
 );
 
 // Fruta sem preço do Ceasa (o coco): aparece, mas não soma no valor
-const comCoco = avisosDoProdutor(
-  produtor('Seu Pedro'),
-  [{ dia: 'Domingo', data: '04/out', avisos: [{ produtor: 6, fruta: 'coco', caixas: 5 }] }],
-  inicio.precos,
-  inicio.custos.pagoProdutor,
-  {},
-  [],
-);
+const comCoco = avisosDoProdutor(produtor('Seu Pedro'), {
+  ...inicio,
+  agenda: [{ dia: 'Domingo', data: '04/out', avisos: [{ produtor: 6, fruta: 'coco', caixas: 5 }] }],
+  coletas: {},
+  confirmados: [],
+});
 conferir(
   'Coco sem preço: preço e valor null, e o total soma só as caixas',
   comCoco[0]?.precoDaCaixa === null &&

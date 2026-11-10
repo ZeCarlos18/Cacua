@@ -94,18 +94,27 @@ export type AvisoDoProdutor = {
 };
 
 /**
+ * O que o avisosDoProdutor usa, num objeto só para não trocar dois de lugar. É o estado do
+ * useCacua(): na tela, `avisosDoProdutor(produtor, useCacua())`.
+ */
+export type DadosDosAvisos = {
+  agenda: { dia: string; data: string; avisos: Aviso[] }[];
+  precos: Record<string, { preco: number }>;
+  custos: { pagoProdutor: number };
+  coletas: Record<string, number[]>;
+  confirmados: string[];
+};
+
+/**
  * Cada aviso do produtor na agenda da semana (S6.3), na ordem dos dias, com o preço da caixa, o
  * valor que o coletor paga e a situação. Seu Antônio, goiaba 12 cx na quinta: 12 × R$ 60 × 80% =
  * R$ 576,00.
  */
 export function avisosDoProdutor(
   produtor: { id: number },
-  agenda: { dia: string; data: string; avisos: Aviso[] }[],
-  precos: Record<string, { preco: number }>,
-  pagoProdutor: number,
-  coletas: Record<string, number[]>,
-  confirmados: string[],
+  { agenda, precos, custos, coletas, confirmados }: DadosDosAvisos,
 ): AvisoDoProdutor[] {
+  const { pagoProdutor } = custos;
   return agenda.flatMap((dia) =>
     dia.avisos
       .filter((aviso) => aviso.produtor === produtor.id)
