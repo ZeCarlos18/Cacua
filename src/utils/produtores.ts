@@ -122,7 +122,11 @@ export function avisosDoProdutor(
           fruta: aviso.fruta,
           caixas: aviso.caixas,
           precoDaCaixa,
-          valor: precoDaCaixa === null ? null : aviso.caixas * precoDaCaixa * pagoProdutor,
+          // Arredonda nos centavos, como o calcularLucroDoDia: 12 × 42 × 0,8 dá 403,20000000000005.
+          valor:
+            precoDaCaixa === null
+              ? null
+              : Math.round(aviso.caixas * precoDaCaixa * pagoProdutor * 100) / 100,
           situacao,
         };
       }),

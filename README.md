@@ -2,7 +2,7 @@
 
 O Caçuá é um app para o coletor de frutas que compra dos pequenos produtores da região e revende no Ceasa. Os produtores avisam quando vão colher (pelo WhatsApp ou pela ponto focal), e o app junta esses avisos numa agenda. Para cada dia, ele calcula se a viagem vale a pena: soma a venda no Ceasa e desconta o que vai para os produtores, a perda, o diesel e os outros custos. Também monta a melhor ordem das paradas, registra cada coleta, mostra a previsão das próximas semanas e deixa o coletor ajustar os próprios custos e preços.
 
-O app tem 5 abas: **Agenda**, **Rota**, **Previsão**, **Produtores** e **Custos**. Por enquanto, ele usa os dados de exemplo de `src/data/dados.js` (o coletor Edson, de Boa Vista, e 6 produtores).
+O coletor entra com a conta dele (ou com a conta de exemplo) e o app tem 5 abas: **Início**, com o resumo da semana, **Agenda**, **Rota**, **Previsão** e **Produtores**. Os **Custos e preços** abrem pelo Início. Por enquanto, ele usa os dados de exemplo de `src/data/dados.js` (o coletor Edson, de Boa Vista, e 6 produtores).
 
 ## Instalar
 
@@ -106,7 +106,7 @@ npx expo lint
 
 | Pasta | O que tem |
 |---|---|
-| `src/app` | As telas. Cada arquivo é uma rota (Expo Router): as 5 abas ficam em `src/app/(abas)`, e telas como a Conta do dia e o Registrar aviso abrem por cima delas. |
+| `src/app` | As telas. Cada arquivo é uma rota (Expo Router): as 5 abas ficam em `src/app/(abas)`, e telas como a Conta do dia, o Registrar aviso e os Custos abrem por cima delas. |
 | `src/components` | Os componentes das telas (cartão do dia, parada, mapa, selo…), cada um com os estilos num `*.styles.ts` ao lado. |
 | `src/utils` | As contas e os textos: lucro do dia, rota, previsão, custos. |
 | `src/state` | O estado do app (S4.1): o `CacuaProvider` e o `useCacua()`, com a agenda, os custos, os preços e as coletas, e o que fica salvo no celular (S4.5). |

@@ -92,6 +92,10 @@ conferir(
   francisco.length === 0 && totalDosAvisos(francisco).caixas === 0 && totalDosAvisos(francisco).valor === 0,
 );
 
+// O valor sai arredondado nos centavos (12 × 42 × 0,8 dá 403,20000000000005 sem arredondar)
+const bananaDoPedro = avisos('Seu Pedro', inicio).find((a) => a.fruta === 'banana');
+conferir('Seu Pedro: banana 12 cx na sexta = 403,2 certinho', bananaDoPedro?.valor === 403.2);
+
 // Situação de cada aviso
 const mangaDaMaria = avisos('Dona Maria', inicio).find((a) => a.data === '01/out');
 conferir('A manga da Dona Maria na quinta já vem "coletado"', mangaDaMaria?.situacao === 'coletado');

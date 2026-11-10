@@ -59,8 +59,11 @@ function Telas() {
       }}>
       <Stack.Protected guard={entrou}>
         <Stack.Screen name="(abas)" options={{ headerShown: false }} />
-        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Agenda' }} />
-        <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Agenda' }} />
+        {/* A Conta e o Registrar aviso abrem pela Agenda e pelo Início (S6.5), então o voltar é genérico. */}
+        <Stack.Screen name="conta/[dia]" options={{ title: 'Conta do dia', headerBackTitle: 'Voltar' }} />
+        <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Voltar' }} />
+        {/* Os Custos saíram da barra de abas (no Android ela aceita no máximo 5) e abrem pelo Início (S6.5). */}
+        <Stack.Screen name="custos" options={{ title: 'Custos e preços', headerBackTitle: 'Início' }} />
       </Stack.Protected>
 
       <Stack.Protected guard={!entrou}>
