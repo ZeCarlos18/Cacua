@@ -1,14 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BotaoConvidar } from '@/components/botao-convidar';
 import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { pontoFocal, produtores } from '@/data/dados';
+import { pontoFocal, posto, produtores } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { estadoInicial } from '@/state/estado';
-import { historicoDoProdutor, proximaColheita } from '@/utils/produtores';
+import { textoDoKm } from '@/utils/conta';
+import { historicoDoProdutor, hrefDoProdutor, proximaColheita } from '@/utils/produtores';
+import { kmEntre } from '@/utils/rota';
 
 export default function ProdutoresScreen() {
   const { agenda, coletas } = useCacua();
@@ -18,22 +21,39 @@ export default function ProdutoresScreen() {
   return (
     <Tela
       titulo="Produtores da região"
-      descricao="“Avisos cumpridos”: quantas vezes o produtor entregou o que avisou.">
+      descricao="“Avisos cumpridos”: quantas vezes o produtor entregou o que avisou. Toque no produtor para ver os detalhes.">
       <Lista>
         <View style={styles.cartao}>
           {produtores.map((produtor, i) => {
             const historico = historicoDoProdutor(produtor, coletas, coletasIniciais);
+            // Do posto até o sítio, em linha reta (S6.6): "7,5 km".
+            const km = textoDoKm(kmEntre(posto, produtor.posicao));
             return (
-              <View key={produtor.id} style={[styles.produtor, i > 0 && styles.divisoria]}>
+              // Cada produtor abre os detalhes dele (S6.6), em /produtor/{id}.
+              <Pressable
+                key={produtor.id}
+                accessibilityRole="button"
+                accessibilityHint="Abre os detalhes do produtor"
+                onPress={() => router.push(hrefDoProdutor(produtor.id))}
+                style={({ pressed }) => [
+                  styles.produtor,
+                  i > 0 && styles.divisoria,
+                  pressed && styles.produtorPressionado,
+                ]}>
                 <View style={styles.cabecalho}>
                   <Text style={styles.nome}>{produtor.nome}</Text>
-                  <Selo
-                    texto={produtor.canal}
-                    cor={produtor.canal === 'WhatsApp' ? 'verde' : 'vermelho'}
-                  />
+                  <View style={styles.seloESeta}>
+                    <Selo
+                      texto={produtor.canal}
+                      cor={produtor.canal === 'WhatsApp' ? 'verde' : 'vermelho'}
+                    />
+                    <Text style={styles.seta} aria-hidden>
+                      ›
+                    </Text>
+                  </View>
                 </View>
                 <Text style={styles.detalhe}>
-                  {produtor.sitio} · {produtor.frutas.join(', ')}
+                  {produtor.sitio} · {produtor.frutas.join(', ')} · {km}
                 </Text>
                 <View style={styles.rodape}>
                   {/* Avisos cumpridos (S5.6): o histórico do dados.js mais as coletas registradas. */}
@@ -46,7 +66,7 @@ export default function ProdutoresScreen() {
                   {/* Próxima colheita (S3.5): "Quinta · 20 cx de manga", "Qui, sex e sáb" ou a previsão. */}
                   <Text style={styles.colheita}>{proximaColheita(produtor, agenda)}</Text>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -64,6 +84,8 @@ export default function ProdutoresScreen() {
 
 const styles = StyleSheet.create({
   cartao: {
+    // O fundo do produtor tocado não passa dos cantos arredondados.
+    overflow: 'hidden',
     borderRadius: Spacing.three,
     borderWidth: 1,
     borderColor: Cacua.borda,
@@ -73,6 +95,9 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
     padding: Spacing.three,
   },
+  produtorPressionado: {
+    backgroundColor: Cacua.fundo,
+  },
   divisoria: {
     borderTopWidth: 1,
     borderTopColor: Cacua.borda,
@@ -81,6 +106,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  seloESeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  seta: {
+    fontSize: 24,
+    lineHeight: 26,
+    color: Cacua.textoSecundario,
   },
   nome: {
     fontSize: 18,
