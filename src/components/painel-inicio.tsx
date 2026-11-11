@@ -106,6 +106,21 @@ type RotaDeHojeProps = {
 /** O cartão da rota de hoje: dia, selo, a rota, o coletado, o lucro, se foi confirmada e os botões. */
 function RotaDeHoje({ hoje, saida }: RotaDeHojeProps) {
   const { dia, conta } = hoje;
+
+  // Quando todos os avisos do dia saem (S7.2), não há viagem: sem selo, sem lucro e sem botões,
+  // em vez de "−R$ 70,00 · Não vale a pena" (só os outros custos).
+  if (dia.avisos.length === 0) {
+    return (
+      <View style={styles.cartao}>
+        <Text style={styles.rotulo}>Rota de hoje</Text>
+        <Text style={styles.dia} accessibilityRole="header">
+          {dia.dia} {dia.data}
+        </Text>
+        <Text style={styles.detalhe}>Nenhum aviso para hoje.</Text>
+      </View>
+    );
+  }
+
   const rotaDoDia = [
     subtituloDaRota(dia.dia, saida),
     `${hoje.paradas} ${hoje.paradas === 1 ? 'parada' : 'paradas'}`,

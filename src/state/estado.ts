@@ -6,6 +6,7 @@
 
 import { agenda, custos, precos, produtores, rota } from '@/data/dados';
 import type { Aviso } from '@/utils/agenda';
+import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
 import { errosDoProdutor, novoProdutor, type CamposDoProdutor } from '@/utils/novo-produtor';
 import type { Posicao } from '@/utils/rota';
 
@@ -74,6 +75,66 @@ export function comAviso(estado: EstadoCacua, data: string, aviso: Aviso): Estad
       dia.data === data ? { ...dia, avisos: [...dia.avisos, aviso] } : dia,
     ),
   };
+}
+
+/** Troca o aviso da posição (0, 1, 2…) na lista do dia pelo que a função devolver (null tira). */
+function comAvisoDaPosicao(
+  estado: EstadoCacua,
+  data: string,
+  posicao: number,
+  trocar: (aviso: Aviso) => Aviso | null,
+): EstadoCacua {
+  return {
+    ...estado,
+    agenda: estado.agenda.map((dia) => {
+      if (dia.data !== data) return dia;
+      const avisos = dia.avisos.flatMap((aviso, i) => {
+        if (i !== posicao) return [aviso];
+        const novo = trocar(aviso);
+        return novo ? [novo] : [];
+      });
+      return { ...dia, avisos };
+    }),
+  };
+}
+
+/**
+ * O aviso da posição já não é o que a tela mostrou (outro produtor ou outra fruta): a lista do dia
+ * mudou entre o que apareceu e o toque, como no segundo de dois toques em "Tirar". Sem `esperado`,
+ * vale só a posição.
+ */
+function avisoMudou(estado: EstadoCacua, data: string, posicao: number, esperado?: Aviso) {
+  if (!esperado) return false;
+  const aviso = estado.agenda.find((dia) => dia.data === data)?.avisos[posicao];
+  return aviso?.produtor !== esperado.produtor || aviso?.fruta !== esperado.fruta;
+}
+
+/**
+ * Troca as caixas do aviso (S7.2), quando o produtor colheu mais ou menos. As caixas têm que ser
+ * inteiras e maiores que zero, como no Registrar aviso. Com motivo para não mudar (dia confirmado
+ * ou produtor já coletado), ou se o aviso da posição não é mais o `esperado`, nada muda.
+ */
+export function comCaixasDoAviso(
+  estado: EstadoCacua,
+  data: string,
+  posicao: number,
+  caixas: number,
+  esperado?: Aviso,
+): EstadoCacua {
+  if (!caixasValem(caixas) || avisoMudou(estado, data, posicao, esperado) || motivoParaNaoMudar(estado, data, posicao)) {
+    return estado;
+  }
+  return comAvisoDaPosicao(estado, data, posicao, (aviso) => ({ ...aviso, caixas }));
+}
+
+/**
+ * Tira o aviso do dia (S7.2), quando o produtor não vai colher. O dia continua na agenda, mesmo
+ * sem nenhum aviso. Com motivo para não mudar, ou se o aviso da posição não é mais o `esperado`,
+ * nada muda.
+ */
+export function semAviso(estado: EstadoCacua, data: string, posicao: number, esperado?: Aviso): EstadoCacua {
+  if (avisoMudou(estado, data, posicao, esperado) || motivoParaNaoMudar(estado, data, posicao)) return estado;
+  return comAvisoDaPosicao(estado, data, posicao, () => null);
 }
 
 /** Muda só os custos enviados (ex.: { diesel: 7.5 }). */
