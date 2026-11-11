@@ -23,10 +23,16 @@ type ValorCacua = EstadoCacua & {
   adicionarProdutor: (campos: CamposDoProdutor) => ErrosDoProdutor | null;
   /** Coloca o aviso no dia (ex.: '30/set'). */
   adicionarAviso: (data: string, aviso: Aviso) => void;
-  /** Troca as caixas do aviso da posição no dia (S7.2), ex.: ('03/out', 0, 15). */
-  mudarCaixasDoAviso: (data: string, posicao: number, caixas: number) => void;
-  /** Tira o aviso da posição no dia (S7.2); o dia continua na agenda. */
-  tirarAviso: (data: string, posicao: number) => void;
+  /**
+   * Troca as caixas do aviso da posição no dia (S7.2), ex.: ('03/out', 0, 15, aviso). Com o aviso
+   * que a tela mostrou, só muda se ele ainda estiver nessa posição.
+   */
+  mudarCaixasDoAviso: (data: string, posicao: number, caixas: number, esperado?: Aviso) => void;
+  /**
+   * Tira o aviso da posição no dia (S7.2); o dia continua na agenda. Com o aviso que a tela
+   * mostrou, dois toques seguidos não tiram o aviso que subiu para a posição.
+   */
+  tirarAviso: (data: string, posicao: number, esperado?: Aviso) => void;
   /** Muda só os campos enviados (ex.: { diesel: 7.5 }). */
   atualizarCustos: (mudancas: Partial<Custos>) => void;
   /** Muda o preço da caixa (ex.: 'banana', 50). */
@@ -88,9 +94,9 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
       return erros;
     },
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
-    mudarCaixasDoAviso: (data, posicao, caixas) =>
-      setEstado((atual) => comCaixasDoAviso(atual, data, posicao, caixas)),
-    tirarAviso: (data, posicao) => setEstado((atual) => semAviso(atual, data, posicao)),
+    mudarCaixasDoAviso: (data, posicao, caixas, esperado) =>
+      setEstado((atual) => comCaixasDoAviso(atual, data, posicao, caixas, esperado)),
+    tirarAviso: (data, posicao, esperado) => setEstado((atual) => semAviso(atual, data, posicao, esperado)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
     atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
     registrarColeta: (data, produtor) => setEstado((atual) => comColeta(atual, data, produtor)),

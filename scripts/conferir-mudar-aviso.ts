@@ -107,6 +107,21 @@ conferir('Caixas 2,5: nada muda', comCaixasDoAviso(inicio, '03/out', 0, 2.5) ===
 conferir('Aviso que não existe (posição 5 do sábado): nada muda', semAviso(inicio, '03/out', 5) === inicio);
 conferir('O estado de antes não muda', inicio.agenda[2].avisos.length === 2 && inicio.agenda[3].avisos[0].caixas === 9);
 
+// Dois toques em "Tirar" com o aviso que a tela mostrou (o Seu Antônio, posição 0 da sexta):
+// o segundo não tira o Seu Pedro, que subiu para a posição 0.
+const antonio = inicio.agenda[2].avisos[0];
+const umToque = semAviso(inicio, '02/out', 0, antonio);
+const doisToques = semAviso(umToque, '02/out', 0, antonio);
+conferir(
+  'Dois toques em "Tirar" o Seu Antônio: o Seu Pedro continua',
+  doisToques === umToque && doisToques.agenda[2].avisos.map((aviso) => aviso.produtor).join() === '6',
+);
+conferir(
+  'Mudar as caixas de um aviso que já saiu da posição: nada muda',
+  comCaixasDoAviso(umToque, '02/out', 0, 20, antonio) === umToque,
+);
+conferir('Com o aviso certo, mudar as caixas funciona', comCaixasDoAviso(inicio, '02/out', 0, 20, antonio).agenda[2].avisos[0].caixas === 20);
+
 if (falhas > 0) {
   console.error(`\n${falhas} conta(s) de mudar e tirar aviso não batem com o cartão.`);
   process.exit(1);
