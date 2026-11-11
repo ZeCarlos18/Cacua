@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { DetalhesProdutor, ProdutorNaoEncontrado } from '@/components/detalhes-produtor';
 import { Lista } from '@/components/lista';
 import { Tela } from '@/components/tela';
-import { pontoFocal, posto, produtores } from '@/data/dados';
+import { pontoFocal, posto } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { estadoInicial } from '@/state/estado';
 import {
@@ -23,7 +23,7 @@ import { kmEntre } from '@/utils/rota';
 export default function ProdutorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const estado = useCacua();
-  const { agenda, custos, coletas } = estado;
+  const { agenda, produtores, custos, coletas } = estado;
   const produtor = produtores.find((item) => String(item.id) === id);
 
   if (!produtor) {

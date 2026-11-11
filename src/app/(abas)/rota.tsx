@@ -4,7 +4,7 @@ import { Lista } from '@/components/lista';
 import { Pilulas } from '@/components/pilulas';
 import { RotaDoDia, RotaNaoEncontrada } from '@/components/rota-do-dia';
 import { Tela } from '@/components/tela';
-import { posto, produtores, rota } from '@/data/dados';
+import { posto, rota } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
 import { areaDoMapa } from '@/utils/mapa-rota';
@@ -22,7 +22,7 @@ import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
  * dia mesmo se a aba já estava aberta em outro, e as pílulas só atualizam o endereço.
  */
 export default function RotaScreen() {
-  const { agenda, custos, precos, coletas, registrarColeta } = useCacua();
+  const { agenda, produtores, custos, precos, coletas, registrarColeta } = useCacua();
   const { dia: id } = useLocalSearchParams<{ dia?: string }>();
   // Sem dia no endereço (ou com um que não está na agenda), começa no dia da rota do dados.js (a quinta).
   const dia = (id ? diaPeloId(agenda, id) : undefined) ?? agenda.find((item) => item.data === rota.data);

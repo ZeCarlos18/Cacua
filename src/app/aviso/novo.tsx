@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 
 import { FormularioAviso } from '@/components/formulario-aviso';
-import { produtores } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 
 /**
@@ -9,7 +8,7 @@ import { useCacua } from '@/state/cacua';
  * ou visita. Abre por cima das abas; ao salvar, o aviso entra na agenda e volta para a Agenda.
  */
 export default function NovoAvisoScreen() {
-  const { agenda, precos, adicionarAviso } = useCacua();
+  const { agenda, produtores, precos, adicionarAviso } = useCacua();
 
   return (
     <FormularioAviso

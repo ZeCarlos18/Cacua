@@ -4,14 +4,35 @@
  * o ponto de partida; quem guarda o estado é o CacuaProvider (cacua.tsx).
  */
 
-import { agenda, custos, precos, rota } from '@/data/dados';
+import { agenda, custos, precos, produtores, rota } from '@/data/dados';
 import type { Aviso } from '@/utils/agenda';
 import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
+import { errosDoProdutor, novoProdutor, type CamposDoProdutor } from '@/utils/novo-produtor';
+import type { Posicao } from '@/utils/rota';
 
 export type Custos = typeof custos;
 
+/** Um produtor da região (S7.1): os 6 do dados.js e os que o coletor cadastra. */
+export type Produtor = {
+  id: number;
+  nome: string;
+  sitio: string;
+  frutas: string[];
+  /** "WhatsApp" ou "Ponto focal". */
+  canal: string;
+  /** Avisos cumpridos antes do app (S5.6); o produtor novo começa com 0 de 0. */
+  cumpridos: number;
+  avisos: number;
+  /** O lugar do sítio no mapa ilustrativo. */
+  posicao: Posicao;
+  /** O texto da próxima colheita quando não tem aviso na agenda (S3.5). */
+  previsao?: string;
+};
+
 export type EstadoCacua = {
   agenda: typeof agenda;
+  /** Os produtores da região (S7.1), que começam pelos 6 do dados.js. */
+  produtores: Produtor[];
   custos: Custos;
   precos: Record<string, { preco: number; kg: number }>;
   /** Ids dos produtores já coletados em cada dia (S5.1), ex.: { '01/out': [3] }. */
@@ -22,7 +43,24 @@ export type EstadoCacua = {
 
 /** Os valores do dados.js. É o começo do app e o que o restaurarPadrao devolve. */
 export function estadoInicial(): EstadoCacua {
-  return { agenda, custos, precos, coletas: { [rota.data]: rota.coletados }, confirmados: [] };
+  return {
+    agenda,
+    produtores,
+    custos,
+    precos,
+    coletas: { [rota.data]: rota.coletados },
+    confirmados: [],
+  };
+}
+
+/**
+ * Coloca o produtor novo no fim da lista (S7.1), com o id seguinte ao maior (o 7) e 0 de 0 avisos
+ * cumpridos. Com erro nos campos (errosDoProdutor), nada muda.
+ */
+export function comProdutor(estado: EstadoCacua, campos: CamposDoProdutor): EstadoCacua {
+  if (errosDoProdutor(campos, estado.produtores)) return estado;
+  const id = Math.max(0, ...estado.produtores.map((produtor) => produtor.id)) + 1;
+  return { ...estado, produtores: [...estado.produtores, novoProdutor(campos, id)] };
 }
 
 function temDia(estado: EstadoCacua, data: string) {
@@ -120,7 +158,8 @@ export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
  * salvo ou quando o texto não serve, e aí o app usa o dados.js. Custos e preços que faltarem no
  * salvo (um campo novo numa versão futura do app) vêm do dados.js. Desde o S5.1, as coletas de
  * cada dia têm que ser listas de ids e as confirmações, listas de datas; o formato antigo, com
- * `coletados`, não serve.
+ * `coletados`, não serve. Desde o S7.1, os produtores também ficam salvos; o salvo de antes, sem
+ * `produtores` (ou com eles estragados), usa os 6 do dados.js e mantém o resto.
  */
 export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   if (!texto) return null;
@@ -150,9 +189,45 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   const padrao = estadoInicial();
   return {
     agenda: salvo.agenda,
+    produtores: produtoresDoSalvo(salvo.produtores) ?? padrao.produtores,
     custos: { ...padrao.custos, ...salvo.custos },
     precos: { ...padrao.precos, ...salvo.precos },
     coletas: salvo.coletas,
     confirmados: salvo.confirmados,
   };
+}
+
+/**
+ * Os produtores salvos, se todos servem: id inteiro sem repetir, nome, sítio, frutas, canal,
+ * avisos e o lugar no mapa. Senão (ou se não há nenhum), null.
+ */
+function produtoresDoSalvo(valor: unknown): Produtor[] | null {
+  if (!Array.isArray(valor) || valor.length === 0) return null;
+
+  const ehNumero = (item: unknown) => typeof item === 'number' && Number.isFinite(item);
+  const ehTexto = (item: unknown) => typeof item === 'string';
+  const serve = (item: unknown): item is Produtor => {
+    if (typeof item !== 'object' || item === null) return false;
+    const produtor = item as Record<string, unknown>;
+    const posicao = produtor.posicao as Record<string, unknown> | null | undefined;
+    return (
+      Number.isInteger(produtor.id) &&
+      ehTexto(produtor.nome) &&
+      ehTexto(produtor.sitio) &&
+      Array.isArray(produtor.frutas) &&
+      produtor.frutas.every(ehTexto) &&
+      ehTexto(produtor.canal) &&
+      ehNumero(produtor.cumpridos) &&
+      ehNumero(produtor.avisos) &&
+      typeof posicao === 'object' &&
+      posicao !== null &&
+      ehNumero(posicao.x) &&
+      ehNumero(posicao.y) &&
+      (produtor.previsao === undefined || ehTexto(produtor.previsao))
+    );
+  };
+
+  if (!valor.every(serve)) return null;
+  const ids = valor.map((produtor) => produtor.id);
+  return new Set(ids).size === ids.length ? valor : null;
 }
