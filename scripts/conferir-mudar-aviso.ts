@@ -3,7 +3,7 @@
 
 import { posto, produtores } from '@/data/dados';
 import { comCaixasDoAviso, comConfirmacao, estadoInicial, semAviso, type EstadoCacua } from '@/state/estado';
-import { motivoParaNaoMudar } from '@/utils/aviso';
+import { motivoParaNaoMudar, perguntaParaTirar } from '@/utils/aviso';
 import { formatarReais } from '@/utils/calculos';
 import { textoDoKm } from '@/utils/conta';
 import { diasSemConfirmacao, resumoDaSemana, resumoDoDia } from '@/utils/inicio';
@@ -121,6 +121,16 @@ conferir(
   comCaixasDoAviso(umToque, '02/out', 0, 20, antonio) === umToque,
 );
 conferir('Com o aviso certo, mudar as caixas funciona', comCaixasDoAviso(inicio, '02/out', 0, 20, antonio).agenda[2].avisos[0].caixas === 20);
+
+// A pergunta do "Tirar da agenda" na Conta (S7.5)
+conferir(
+  'Pergunta do Seu Pedro',
+  perguntaParaTirar('Seu Pedro', 'Banana', 12) === 'Tirar o aviso de 12 caixas de banana do Seu Pedro?',
+);
+conferir(
+  'Pergunta da Dona Lúcia, com 1 caixa',
+  perguntaParaTirar('Dona Lúcia', 'Mamão', 1) === 'Tirar o aviso de 1 caixa de mamão da Dona Lúcia?',
+);
 
 if (falhas > 0) {
   console.error(`\n${falhas} conta(s) de mudar e tirar aviso não batem com o cartão.`);

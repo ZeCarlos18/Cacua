@@ -23,6 +23,18 @@ type CartaoDiaProps = {
  * Depois de confirmar a coleta, o dia ganha o selo "Confirmada" (S5.5).
  */
 export function CartaoDia({ dia, conta, cargaMinima, confirmado }: CartaoDiaProps) {
+  // Todos os avisos saíram (S7.5): sem viagem, o dia não tem selo nem lucro.
+  if (dia.avisos.length === 0) {
+    return (
+      <View style={styles.cartao}>
+        <Text style={styles.data}>
+          {dia.dia} {dia.data}
+        </Text>
+        <Text style={styles.sitios}>Nenhum aviso</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.cartao}>
       <View style={styles.cabecalho}>

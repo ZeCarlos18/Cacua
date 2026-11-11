@@ -114,9 +114,41 @@ export const styles = StyleSheet.create({
     lineHeight: 22,
     color: Cacua.texto,
   },
+  produtorBase: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
   produtorDetalhe: {
+    flexShrink: 1,
     fontSize: 14,
     lineHeight: 20,
+    color: Cacua.textoSecundario,
+  },
+  /** O "Mudar" de cada aviso (S7.5): pequeno, com contorno, para não competir com o Confirmar coleta. */
+  mudar: {
+    minHeight: 36,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.two + Spacing.one,
+    borderWidth: 1,
+    borderColor: Cacua.verde,
+    backgroundColor: Cacua.superficie,
+  },
+  mudarPressionado: {
+    backgroundColor: Cacua.verdeClaro,
+  },
+  mudarTexto: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
+  },
+  semAviso: {
+    fontSize: 16,
+    lineHeight: 22,
     color: Cacua.textoSecundario,
   },
   vazio: {
