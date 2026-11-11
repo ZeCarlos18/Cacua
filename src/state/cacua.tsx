@@ -64,12 +64,18 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
   // O estado do dados.js não vai para o celular: nem ao abrir sem nada salvo, nem depois do
   // restaurarPadrao, que apaga o salvo.
   const naoSalvar = useRef(estado);
+  // O adicionarProdutor confere o repetido na hora, então lê a lista mais nova por aqui (como o
+  // cadastrar do S6.1): num toque duplo no "Salvar produtor", o segundo já vê o produtor novo.
+  const produtoresAtuais = useRef(estado.produtores);
 
   useEffect(() => {
     let ativo = true;
     carregarEstado().then((salvo) => {
       if (!ativo) return;
-      if (salvo) setEstado(salvo);
+      if (salvo) {
+        produtoresAtuais.current = salvo.produtores;
+        setEstado(salvo);
+      }
       setCarregado(true);
     });
     return () => {
@@ -89,9 +95,11 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
   const valor: ValorCacua = {
     ...estado,
     adicionarProdutor: (campos) => {
-      const erros = errosDoProdutor(campos, estado.produtores);
-      if (!erros) setEstado((atual) => comProdutor(atual, campos));
-      return erros;
+      const erros = errosDoProdutor(campos, produtoresAtuais.current);
+      if (erros) return erros;
+      produtoresAtuais.current = comProdutor({ ...estado, produtores: produtoresAtuais.current }, campos).produtores;
+      setEstado((atual) => comProdutor(atual, campos));
+      return null;
     },
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
     mudarCaixasDoAviso: (data, posicao, caixas, esperado) =>
@@ -105,6 +113,7 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
     restaurarPadrao: () => {
       const padrao = estadoInicial();
       naoSalvar.current = padrao;
+      produtoresAtuais.current = padrao.produtores;
       setEstado(padrao);
       apagarEstadoSalvo();
     },
