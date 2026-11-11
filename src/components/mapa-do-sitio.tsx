@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Text, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 
 import { Ponto } from '@/components/mapa-rota';
@@ -7,6 +7,9 @@ import { nomeCurto, posicaoDoToque, type AreaDoMapa } from '@/utils/mapa-rota';
 import { kmEntre, type Posicao } from '@/utils/rota';
 
 import { styles } from './mapa-do-sitio.styles';
+
+/** Até quantos pixels o dedo pode andar e ainda contar como toque, e não como arrasto. */
+const DISTANCIA_DE_ARRASTO = 10;
 
 type MapaDoSitioProps = {
   posto: Posicao;
@@ -34,9 +37,18 @@ export function MapaDoSitio({ posto, area, sitios, marcado, nomeDoSitio, onMarca
     setTamanho({ largura: width, altura: height });
   }
 
+  // Onde o dedo encostou, para saber se ele só tocou ou arrastou (para rolar a tela).
+  const inicio = useRef({ x: 0, y: 0 });
+
+  function comecar(evento: GestureResponderEvent) {
+    inicio.current = { x: evento.nativeEvent.pageX, y: evento.nativeEvent.pageY };
+  }
+
   // O locationX/Y vem em relação à camada de toque, que cobre o quadro inteiro (na web e no celular).
   function marcar(evento: GestureResponderEvent) {
-    const { locationX, locationY } = evento.nativeEvent;
+    const { locationX, locationY, pageX, pageY } = evento.nativeEvent;
+    // O dedo andou mais de 10 px: era para rolar a tela, e não para marcar o sítio (revisão do S7.4).
+    if (Math.hypot(pageX - inicio.current.x, pageY - inicio.current.y) > DISTANCIA_DE_ARRASTO) return;
     onMarcar(posicaoDoToque({ x: locationX, y: locationY }, tamanho, area));
   }
 
@@ -71,17 +83,21 @@ export function MapaDoSitio({ posto, area, sitios, marcado, nomeDoSitio, onMarca
             accessibilityLabel="Mapa para marcar o sítio"
             accessibilityHint="Toque onde fica o sítio. Tocar de novo muda o lugar."
             onStartShouldSetResponder={() => true}
+            onResponderGrant={comecar}
             onResponderRelease={marcar}
           />
         </View>
         <Text style={styles.legenda}>Mapa ilustrativo</Text>
       </View>
 
-      <Text style={marcado ? styles.distancia : styles.dica} accessibilityLiveRegion="polite">
-        {marcado
-          ? `${textoDoKm(kmEntre(posto, marcado))} do posto, em linha reta`
-          : 'Toque no mapa onde fica o sítio.'}
-      </Text>
+      {/* Com o erro, a dica sai: ele já diz o mesmo, em vermelho (revisão do S7.4). */}
+      {marcado ? (
+        <Text style={styles.distancia} accessibilityLiveRegion="polite">
+          {`${textoDoKm(kmEntre(posto, marcado))} do posto, em linha reta`}
+        </Text>
+      ) : erro ? null : (
+        <Text style={styles.dica}>Toque no mapa onde fica o sítio.</Text>
+      )}
       {erro ? (
         <Text style={styles.erro} accessibilityLiveRegion="polite">
           {erro}

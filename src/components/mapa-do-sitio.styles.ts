@@ -35,6 +35,8 @@ export const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
   },
   legenda: {
+    // A legenda fica por cima do canto do mapa; assim o toque passa por ela (revisão do S7.4).
+    pointerEvents: 'none',
     position: 'absolute',
     right: Spacing.two + Spacing.one,
     bottom: Spacing.two,
