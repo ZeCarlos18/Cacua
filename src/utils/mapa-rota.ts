@@ -35,6 +35,25 @@ export function posicaoNoMapa(ponto: Posicao, area: AreaDoMapa) {
   };
 }
 
+/**
+ * O contrário da posicaoNoMapa (S7.1): onde o dedo tocou no quadro, em pixels, vira o ponto do
+ * mapa ilustrativo, arredondado e sem sair da área. Quadro de 304 × 372 px, toque em (152, 186) →
+ * (168, 230); toque fora, em (−10, −10) → (16, 44), na borda.
+ */
+export function posicaoDoToque(
+  toque: { x: number; y: number },
+  tamanho: { largura: number; altura: number },
+  area: AreaDoMapa,
+): Posicao {
+  // De 0 a 1 dentro do quadro. Quadro ainda sem tamanho (antes do onLayout) não divide por zero.
+  const proporcao = (valor: number, total: number) =>
+    total > 0 ? Math.min(Math.max(valor / total, 0), 1) : 0;
+  return {
+    x: Math.round(area.x + proporcao(toque.x, tamanho.largura) * area.largura),
+    y: Math.round(area.y + proporcao(toque.y, tamanho.altura) * area.altura),
+  };
+}
+
 /** O nome vai à direita do círculo, ou à esquerda quando o ponto está na metade direita do mapa. */
 export function ladoDoNome(ponto: Posicao, area: AreaDoMapa) {
   return posicaoNoMapa(ponto, area).esquerda > 50 ? 'esquerda' : 'direita';

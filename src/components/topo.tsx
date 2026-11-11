@@ -3,8 +3,8 @@ import { Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Spacing } from '@/constants/theme';
-import { produtores } from '@/data/dados';
 import { useAcesso, useColetor } from '@/state/acesso';
+import { useCacua } from '@/state/cacua';
 
 import { styles } from './topo.styles';
 
@@ -14,6 +14,8 @@ export function Topo() {
   const espacoTopo = Platform.OS === 'web' ? Spacing.three : insets.top + Spacing.two;
   const coletor = useColetor();
   const { sair } = useAcesso();
+  // Com o produtor novo (S7.1), a conta muda: "7 produtores".
+  const { produtores } = useCacua();
 
   return (
     <View style={[styles.topo, { paddingTop: espacoTopo }]}>

@@ -6,7 +6,7 @@ import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
-import { pontoFocal, posto, produtores } from '@/data/dados';
+import { pontoFocal, posto } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { estadoInicial } from '@/state/estado';
 import { textoDoKm } from '@/utils/conta';
@@ -14,7 +14,7 @@ import { historicoDoProdutor, hrefDoProdutor, proximaColheita } from '@/utils/pr
 import { kmEntre } from '@/utils/rota';
 
 export default function ProdutoresScreen() {
-  const { agenda, coletas } = useCacua();
+  const { agenda, produtores, coletas } = useCacua();
   // As coletas que já vêm do dados.js (a Dona Maria na quinta) já estão no histórico (S5.6).
   const coletasIniciais = estadoInicial().coletas;
 

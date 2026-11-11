@@ -6,6 +6,7 @@ import {
   comConfirmacao,
   comCustos,
   comPreco,
+  comProdutor,
   estadoInicial,
   semConfirmacao,
   type Custos,
@@ -13,8 +14,11 @@ import {
 } from '@/state/estado';
 import { apagarEstadoSalvo, carregarEstado, salvarEstado } from '@/state/salvo';
 import type { Aviso } from '@/utils/agenda';
+import { errosDoProdutor, type CamposDoProdutor, type ErrosDoProdutor } from '@/utils/novo-produtor';
 
 type ValorCacua = EstadoCacua & {
+  /** Cadastra o produtor novo (S7.1). Devolve os erros de cada campo, ou null se deu certo. */
+  adicionarProdutor: (campos: CamposDoProdutor) => ErrosDoProdutor | null;
   /** Coloca o aviso no dia (ex.: '30/set'). */
   adicionarAviso: (data: string, aviso: Aviso) => void;
   /** Muda só os campos enviados (ex.: { diesel: 7.5 }). */
@@ -38,7 +42,7 @@ type CacuaProviderProps = {
 };
 
 /**
- * Estado compartilhado do app (S4.1): agenda, custos, preços e coletas. Uma mudança aqui já
+ * Estado compartilhado do app (S4.1): agenda, produtores (S7.1), custos, preços e coletas. Uma mudança aqui já
  * recalcula as telas que leem pelo useCacua(). Desde o S4.5, ele fica salvo no celular: ao abrir,
  * o app carrega o que foi salvo (ou o dados.js, se não houver nada) e salva a cada mudança.
  */
@@ -72,6 +76,11 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
 
   const valor: ValorCacua = {
     ...estado,
+    adicionarProdutor: (campos) => {
+      const erros = errosDoProdutor(campos, estado.produtores);
+      if (!erros) setEstado((atual) => comProdutor(atual, campos));
+      return erros;
+    },
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
     atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
