@@ -7,6 +7,7 @@
 import { agenda, custos, precos, produtores, rota } from '@/data/dados';
 import type { Aviso } from '@/utils/agenda';
 import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
+import { chaveDaEntrega, type CaixasPorFruta, type Entregas } from '@/utils/coleta';
 import { errosDoProdutor, novoProdutor, type CamposDoProdutor } from '@/utils/novo-produtor';
 import type { Posicao } from '@/utils/rota';
 
@@ -39,6 +40,8 @@ export type EstadoCacua = {
   coletas: Record<string, number[]>;
   /** Datas dos dias com a coleta confirmada (S5.1), ex.: ['30/set']. */
   confirmados: string[];
+  /** As caixas que vieram na coleta (S7.3), por dia, produtor e fruta: { '01/out': { '2:goiaba': 10 } }. */
+  entregas: Entregas;
 };
 
 /** Os valores do dados.js. É o começo do app e o que o restaurarPadrao devolve. */
@@ -50,6 +53,7 @@ export function estadoInicial(): EstadoCacua {
     precos,
     coletas: { [rota.data]: rota.coletados },
     confirmados: [],
+    entregas: {},
   };
 }
 
@@ -149,11 +153,52 @@ export function comPreco(estado: EstadoCacua, fruta: string, preco: number): Est
   return { ...estado, precos: { ...estado.precos, [fruta]: { ...atual, preco } } };
 }
 
-/** Marca o produtor como coletado no dia, sem repetir. Se o dia não está na agenda, nada muda. */
-export function comColeta(estado: EstadoCacua, data: string, produtor: number): EstadoCacua {
+/**
+ * Marca o produtor como coletado no dia, sem repetir. Se o dia não está na agenda, nada muda.
+ * Desde o S7.3, recebe as caixas que vieram de cada fruta ({ goiaba: 10 }); sem elas, vale o que
+ * foi avisado. Fruta que o produtor não avisou no dia fica de fora, e as caixas têm que ser
+ * inteiras e maiores que zero (senão, nada muda).
+ */
+export function comColeta(
+  estado: EstadoCacua,
+  data: string,
+  produtor: number,
+  caixas?: CaixasPorFruta,
+): EstadoCacua {
   const doDia = estado.coletas[data] ?? [];
-  if (!temDia(estado, data) || doDia.includes(produtor)) return estado;
-  return { ...estado, coletas: { ...estado.coletas, [data]: [...doDia, produtor] } };
+  const dia = estado.agenda.find((item) => item.data === data);
+  if (!dia || doDia.includes(produtor)) return estado;
+
+  const avisadas = new Set(dia.avisos.filter((aviso) => aviso.produtor === produtor).map((aviso) => aviso.fruta));
+  const vieram = Object.entries(caixas ?? {}).filter(([fruta]) => avisadas.has(fruta));
+  if (!vieram.every(([, quantas]) => caixasValem(quantas))) return estado;
+
+  const coletas = { ...estado.coletas, [data]: [...doDia, produtor] };
+  if (vieram.length === 0) return { ...estado, coletas };
+
+  const entregasDoDia = { ...estado.entregas[data] };
+  for (const [fruta, quantas] of vieram) entregasDoDia[chaveDaEntrega(produtor, fruta)] = quantas;
+  return { ...estado, coletas, entregas: { ...estado.entregas, [data]: entregasDoDia } };
+}
+
+/**
+ * Desfaz a coleta registrada por engano (S7.3) e apaga as caixas que vieram do produtor naquele
+ * dia. Em dia confirmado (primeiro desfaz a confirmação), ou se ele não foi coletado, nada muda.
+ */
+export function semColeta(estado: EstadoCacua, data: string, produtor: number): EstadoCacua {
+  const doDia = estado.coletas[data] ?? [];
+  if (estado.confirmados.includes(data) || !doDia.includes(produtor)) return estado;
+
+  const coletas = { ...estado.coletas, [data]: doDia.filter((id) => id !== produtor) };
+  // "2:" pega "2:goiaba" e "2:manga", mas não "21:goiaba".
+  const doProdutor = chaveDaEntrega(produtor, '');
+  const entregasDoDia = Object.fromEntries(
+    Object.entries(estado.entregas[data] ?? {}).filter(([chave]) => !chave.startsWith(doProdutor)),
+  );
+  const entregas = { ...estado.entregas };
+  if (Object.keys(entregasDoDia).length > 0) entregas[data] = entregasDoDia;
+  else delete entregas[data];
+  return { ...estado, coletas, entregas };
 }
 
 /** Confirma a coleta do dia, sem repetir. Se o dia não está na agenda, nada muda. */
@@ -174,7 +219,8 @@ export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
  * salvo (um campo novo numa versão futura do app) vêm do dados.js. Desde o S5.1, as coletas de
  * cada dia têm que ser listas de ids e as confirmações, listas de datas; o formato antigo, com
  * `coletados`, não serve. Desde o S7.1, os produtores também ficam salvos; o salvo de antes, sem
- * `produtores` (ou sem nenhum que sirva), usa os 6 do dados.js e mantém o resto.
+ * `produtores` (ou sem nenhum que sirva), usa os 6 do dados.js e mantém o resto. Desde o S7.3, as
+ * caixas que vieram também; o salvo sem `entregas` começa com {}.
  */
 export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   if (!texto) return null;
@@ -209,7 +255,27 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     precos: { ...padrao.precos, ...salvo.precos },
     coletas: salvo.coletas,
     confirmados: salvo.confirmados,
+    entregas: entregasDoSalvo(salvo.entregas),
   };
+}
+
+/**
+ * As caixas que vieram, do salvo (S7.3). Salvo de antes, sem `entregas`, começa com {}. Uma entrega
+ * estragada (chave sem "produtor:fruta" ou caixas que não valem) sai sozinha, e as outras ficam.
+ */
+function entregasDoSalvo(valor: unknown): Entregas {
+  if (typeof valor !== 'object' || valor === null || Array.isArray(valor)) return {};
+
+  const entregas: Entregas = {};
+  for (const [data, doDia] of Object.entries(valor)) {
+    if (typeof doDia !== 'object' || doDia === null || Array.isArray(doDia)) continue;
+    const boas = Object.entries(doDia).filter(
+      (entrega): entrega is [string, number] =>
+        /^\d+:.+$/.test(entrega[0]) && typeof entrega[1] === 'number' && caixasValem(entrega[1]),
+    );
+    if (boas.length > 0) entregas[data] = Object.fromEntries(boas);
+  }
+  return entregas;
 }
 
 /**
