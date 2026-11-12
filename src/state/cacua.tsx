@@ -10,12 +10,14 @@ import {
   comProdutor,
   estadoInicial,
   semAviso,
+  semColeta,
   semConfirmacao,
   type Custos,
   type EstadoCacua,
 } from '@/state/estado';
 import { apagarEstadoSalvo, carregarEstado, salvarEstado } from '@/state/salvo';
 import type { Aviso } from '@/utils/agenda';
+import type { CaixasPorFruta } from '@/utils/coleta';
 import { errosDoProdutor, type CamposDoProdutor, type ErrosDoProdutor } from '@/utils/novo-produtor';
 
 type ValorCacua = EstadoCacua & {
@@ -37,8 +39,13 @@ type ValorCacua = EstadoCacua & {
   atualizarCustos: (mudancas: Partial<Custos>) => void;
   /** Muda o preço da caixa (ex.: 'banana', 50). */
   atualizarPreco: (fruta: string, preco: number) => void;
-  /** Marca a coleta do produtor no dia (ex.: '30/set', 4). */
-  registrarColeta: (data: string, produtor: number) => void;
+  /**
+   * Marca a coleta do produtor no dia (ex.: '30/set', 4). Desde o S7.3, com as caixas que vieram de
+   * cada fruta ('01/out', 2, { goiaba: 10 }); sem elas, vale o que foi avisado.
+   */
+  registrarColeta: (data: string, produtor: number, caixas?: CaixasPorFruta) => void;
+  /** Desfaz a coleta registrada por engano (S7.3). Em dia confirmado, nada muda. */
+  desfazerColeta: (data: string, produtor: number) => void;
   /** Confirma a coleta do dia (ex.: '30/set'). */
   confirmarDia: (data: string) => void;
   /** Desfaz a confirmação do dia. */
@@ -64,12 +71,18 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
   // O estado do dados.js não vai para o celular: nem ao abrir sem nada salvo, nem depois do
   // restaurarPadrao, que apaga o salvo.
   const naoSalvar = useRef(estado);
+  // O adicionarProdutor confere o repetido na hora, então lê a lista mais nova por aqui (como o
+  // cadastrar do S6.1): num toque duplo no "Salvar produtor", o segundo já vê o produtor novo.
+  const produtoresAtuais = useRef(estado.produtores);
 
   useEffect(() => {
     let ativo = true;
     carregarEstado().then((salvo) => {
       if (!ativo) return;
-      if (salvo) setEstado(salvo);
+      if (salvo) {
+        produtoresAtuais.current = salvo.produtores;
+        setEstado(salvo);
+      }
       setCarregado(true);
     });
     return () => {
@@ -89,9 +102,11 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
   const valor: ValorCacua = {
     ...estado,
     adicionarProdutor: (campos) => {
-      const erros = errosDoProdutor(campos, estado.produtores);
-      if (!erros) setEstado((atual) => comProdutor(atual, campos));
-      return erros;
+      const erros = errosDoProdutor(campos, produtoresAtuais.current);
+      if (erros) return erros;
+      produtoresAtuais.current = comProdutor({ ...estado, produtores: produtoresAtuais.current }, campos).produtores;
+      setEstado((atual) => comProdutor(atual, campos));
+      return null;
     },
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
     mudarCaixasDoAviso: (data, posicao, caixas, esperado) =>
@@ -99,12 +114,14 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
     tirarAviso: (data, posicao, esperado) => setEstado((atual) => semAviso(atual, data, posicao, esperado)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
     atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
-    registrarColeta: (data, produtor) => setEstado((atual) => comColeta(atual, data, produtor)),
+    registrarColeta: (data, produtor, caixas) => setEstado((atual) => comColeta(atual, data, produtor, caixas)),
+    desfazerColeta: (data, produtor) => setEstado((atual) => semColeta(atual, data, produtor)),
     confirmarDia: (data) => setEstado((atual) => comConfirmacao(atual, data)),
     desfazerConfirmacao: (data) => setEstado((atual) => semConfirmacao(atual, data)),
     restaurarPadrao: () => {
       const padrao = estadoInicial();
       naoSalvar.current = padrao;
+      produtoresAtuais.current = padrao.produtores;
       setEstado(padrao);
       apagarEstadoSalvo();
     },
