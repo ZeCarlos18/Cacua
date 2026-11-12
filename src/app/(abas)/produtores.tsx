@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BotaoConvidar } from '@/components/botao-convidar';
+import { BotaoNovoProdutor } from '@/components/botao-novo-produtor';
 import { Lista } from '@/components/lista';
 import { Selo } from '@/components/selo';
 import { Tela } from '@/components/tela';
@@ -23,6 +24,8 @@ export default function ProdutoresScreen() {
       titulo="Produtores da região"
       descricao="“Avisos cumpridos”: quantas vezes o produtor entregou o que avisou. Toque no produtor para ver os detalhes.">
       <Lista>
+        {/* Cadastra o produtor e marca o sítio no mapa (S7.4); ele entra no fim da lista. */}
+        <BotaoNovoProdutor />
         <View style={styles.cartao}>
           {produtores.map((produtor, i) => {
             const historico = historicoDoProdutor(produtor, coletas, coletasIniciais);

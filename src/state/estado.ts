@@ -219,7 +219,7 @@ export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
  * salvo (um campo novo numa versão futura do app) vêm do dados.js. Desde o S5.1, as coletas de
  * cada dia têm que ser listas de ids e as confirmações, listas de datas; o formato antigo, com
  * `coletados`, não serve. Desde o S7.1, os produtores também ficam salvos; o salvo de antes, sem
- * `produtores` (ou com eles estragados), usa os 6 do dados.js e mantém o resto. Desde o S7.3, as
+ * `produtores` (ou sem nenhum que sirva), usa os 6 do dados.js e mantém o resto. Desde o S7.3, as
  * caixas que vieram também; o salvo sem `entregas` começa com {}.
  */
 export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
@@ -279,8 +279,8 @@ function entregasDoSalvo(valor: unknown): Entregas {
 }
 
 /**
- * Os produtores salvos, se todos servem: id inteiro sem repetir, nome, sítio, frutas, canal,
- * avisos e o lugar no mapa. Senão (ou se não há nenhum), null.
+ * Os produtores salvos que servem: id inteiro sem repetir, nome, sítio, frutas, canal, avisos e o
+ * lugar no mapa. Se nenhum serve (ou se não há nenhum), null.
  */
 function produtoresDoSalvo(valor: unknown): Produtor[] | null {
   if (!Array.isArray(valor) || valor.length === 0) return null;
@@ -308,7 +308,13 @@ function produtoresDoSalvo(valor: unknown): Produtor[] | null {
     );
   };
 
-  if (!valor.every(serve)) return null;
-  const ids = valor.map((produtor) => produtor.id);
-  return new Set(ids).size === ids.length ? valor : null;
+  // Um produtor estragado não leva os outros junto: fica de fora só ele. Com o id repetido, fica o
+  // primeiro. Só volta para os 6 do dados.js se nenhum servir (revisão do S7.1).
+  const ids = new Set<number>();
+  const bons = valor.filter((item): item is Produtor => {
+    if (!serve(item) || ids.has(item.id)) return false;
+    ids.add(item.id);
+    return true;
+  });
+  return bons.length > 0 ? bons : null;
 }
