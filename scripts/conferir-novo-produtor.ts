@@ -131,13 +131,36 @@ conferir(
 const estragados = (produtores: unknown) => estadoDoSalvo(JSON.stringify({ ...quintaComRita, produtores }));
 conferir('Produtores salvos que não são lista → os 6', estragados('Dona Rita')?.produtores.length === 6);
 conferir('Lista vazia → os 6', estragados([])?.produtores.length === 6);
+conferir('Nenhum produtor que sirva → os 6', estragados([{ ...novaRita, nome: 7 }])?.produtores.length === 6);
+
+// Um produtor estragado não leva os outros junto (revisão do S7.1): fica de fora só ele.
+const semLugarFrancisco = [{ ...inicio.produtores[0], posicao: undefined }, ...inicio.produtores.slice(1), novaRita];
+const doSalvoSemFrancisco = estragados(semLugarFrancisco);
 conferir(
-  'Um produtor sem lugar no mapa → os 6, e a agenda continua',
-  estragados([...inicio.produtores, { ...novaRita, posicao: undefined }])?.produtores.length === 6 &&
-    estragados([...inicio.produtores, { ...novaRita, posicao: undefined }])?.agenda.find((dia) => dia.data === '01/out')?.avisos.length === 4,
+  'Seu Francisco sem lugar no mapa: sai só ele, e a Dona Rita continua (6 produtores)',
+  doSalvoSemFrancisco?.produtores.length === 6 &&
+    !doSalvoSemFrancisco.produtores.some((produtor) => produtor.nome === 'Seu Francisco') &&
+    doSalvoSemFrancisco.produtores.at(-1)?.nome === 'Dona Rita',
 );
-conferir('Dois produtores com o mesmo id → os 6', estragados([...inicio.produtores, { ...novaRita, id: 2 }])?.produtores.length === 6);
-conferir('Produtor sem nome → os 6', estragados([{ ...novaRita, nome: 7 }])?.produtores.length === 6);
+const quintaSemFrancisco = doSalvoSemFrancisco?.agenda.find((dia) => dia.data === '01/out');
+conferir(
+  'Com o Seu Francisco estragado, a rota de quinta continua com a Dona Rita (4 paradas, R$ 573,44)',
+  !!quintaSemFrancisco &&
+    !!doSalvoSemFrancisco &&
+    montarRota(quintaSemFrancisco, doSalvoSemFrancisco.produtores, posto).paradas.length === 4 &&
+    formatarReais(
+      calcularLucroDoDia(
+        { ...quintaSemFrancisco, km: montarRota(quintaSemFrancisco, doSalvoSemFrancisco.produtores, posto).km },
+        doSalvoSemFrancisco.precos,
+        doSalvoSemFrancisco.custos,
+      ).lucro,
+    ) === 'R$ 573,44',
+);
+const comIdRepetido = estragados([...inicio.produtores, { ...novaRita, id: 2 }]);
+conferir(
+  'Dois produtores com o mesmo id: fica o primeiro (o Seu Antônio), e a cópia sai',
+  comIdRepetido?.produtores.length === 6 && comIdRepetido.produtores.find((produtor) => produtor.id === 2)?.nome === 'Seu Antônio',
+);
 
 if (falhas > 0) {
   console.error(`\n${falhas} conta(s) do produtor novo não batem com o cartão.`);

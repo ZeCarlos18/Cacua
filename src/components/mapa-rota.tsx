@@ -62,8 +62,8 @@ type PontoProps = {
   nome?: string;
 };
 
-/** Um círculo no mapa e, ao lado, o nome do sítio. */
-function Ponto({ posicao, area, texto, estilo, nome }: PontoProps) {
+/** Um círculo no mapa e, ao lado, o nome do sítio. O mapa do sítio novo (S7.4) também usa. */
+export function Ponto({ posicao, area, texto, estilo, nome }: PontoProps) {
   const { esquerda, topo } = posicaoNoMapa(posicao, area);
   const nomeNaDireita = ladoDoNome(posicao, area) === 'direita';
 
