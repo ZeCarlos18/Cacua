@@ -80,7 +80,7 @@ export default function RotaScreen() {
           semPosicao={nomesDosProdutores(semPosicao, produtores)}
           posto={posto}
           area={areaDoMapa(posto, produtores)}
-          podeDesfazer={!confirmados.includes(dia.data)}
+          diaConfirmado={confirmados.includes(dia.data)}
           onRegistrar={(produtor, caixas) => registrarColeta(dia.data, produtor, caixas)}
           onDesfazer={(produtor) => desfazerColeta(dia.data, produtor)}
         />

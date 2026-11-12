@@ -34,8 +34,11 @@ type RotaDoDiaProps = {
   /** Posição do posto e área do mapa ilustrativo (S3.4). */
   posto: Posicao;
   area: AreaDoMapa;
-  /** Sem "Desfazer coleta" em dia confirmado (S7.3). */
-  podeDesfazer: boolean;
+  /**
+   * Dia confirmado na Conta: sem "Registrar coleta" e sem "Desfazer coleta". Primeiro desfaz a
+   * confirmação, depois muda (a mesma regra do S7.2 e do S7.3).
+   */
+  diaConfirmado: boolean;
   /** Registra a coleta do produtor com as caixas que vieram de cada fruta (S7.6). */
   onRegistrar: (id: number, caixas: CaixasPorFruta) => void;
   onDesfazer: (id: number) => void;
@@ -55,7 +58,7 @@ export function RotaDoDia({
   semPosicao,
   posto,
   area,
-  podeDesfazer,
+  diaConfirmado,
   onRegistrar,
   onDesfazer,
 }: RotaDoDiaProps) {
@@ -79,12 +82,22 @@ export function RotaDoDia({
 
       <MapaRota posto={posto} area={area} paradas={paradas} coletados={coletados} />
 
+      {/* Sem isso, o "Registrar coleta" e o "Desfazer coleta" somem sem explicação (revisão do S7.6). */}
+      {diaConfirmado ? (
+        <Text style={styles.aviso}>
+          Dia confirmado. Para registrar ou desfazer uma coleta, desfaça a confirmação na Conta do dia.
+        </Text>
+      ) : null}
+
       <View style={[styles.cartao, styles.cartaoParadas]}>
         {paradas.map((parada, posicao) => {
           const avisadas = caixasAvisadas({ avisos: avisados }, parada.id);
+          // Calculado só aqui: a parada ("avisou 12") e o recibo usam o mesmo número.
           const totalAvisado = Object.values(avisadas).reduce((soma, quantas) => soma + quantas, 0);
           return (
-            <View key={parada.id} style={posicao > 0 && styles.divisor}>
+            // O dia entra na chave: ao trocar de dia, a parada do mesmo produtor começa do zero, e o
+            // "Quantas caixas vieram?" aberto no outro dia fecha (revisão do S7.6).
+            <View key={`${dia.data}-${parada.id}`} style={posicao > 0 && styles.divisor}>
               <Parada
                 numero={parada.numero}
                 sitio={parada.sitio}
@@ -92,8 +105,9 @@ export function RotaDoDia({
                 fruta={parada.fruta}
                 caixas={parada.caixas}
                 avisadas={avisadas}
+                totalAvisado={totalAvisado}
                 coletada={coletados.includes(parada.id)}
-                podeDesfazer={podeDesfazer}
+                diaConfirmado={diaConfirmado}
                 // "Goiaba: 10 caixas (avisou 12)" quando o que veio é diferente (S7.3).
                 recibo={textoDoRecibo(dia, parada, coletor, totalAvisado)}
                 onRegistrar={(caixas) => onRegistrar(parada.id, caixas)}

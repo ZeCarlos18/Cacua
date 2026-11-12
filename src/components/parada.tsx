@@ -21,9 +21,11 @@ type ParadaProps = {
   caixas: number;
   /** As caixas avisadas de cada fruta (caixasAvisadas, S7.3): o formulário já vem com elas. */
   avisadas: CaixasPorFruta;
+  /** A soma das avisadas, calculada na RotaDoDia, que usa a mesma no recibo. */
+  totalAvisado: number;
   coletada: boolean;
-  /** Sem "Desfazer coleta" em dia confirmado (S7.3). */
-  podeDesfazer: boolean;
+  /** Dia confirmado: sem "Registrar coleta" e sem "Desfazer coleta" (primeiro desfaz a confirmação). */
+  diaConfirmado: boolean;
   /** O texto do recibo (textoDoRecibo), que o "Mandar recibo" abre no compartilhar (S5.2). */
   recibo: string;
   /** Registra a coleta com as caixas que vieram de cada fruta ({ goiaba: 10 }). */
@@ -44,14 +46,14 @@ export function Parada({
   fruta,
   caixas,
   avisadas,
+  totalAvisado,
   coletada,
-  podeDesfazer,
+  diaConfirmado,
   recibo,
   onRegistrar,
   onDesfazer,
 }: ParadaProps) {
   const [perguntando, setPerguntando] = useState(false);
-  const totalAvisado = Object.values(avisadas).reduce((soma, quantas) => soma + quantas, 0);
   const avisou = coletada && caixas !== totalAvisado ? ` (avisou ${totalAvisado})` : '';
 
   return (
@@ -85,7 +87,7 @@ export function Parada({
               style={({ pressed }) => [styles.botaoRecibo, pressed && styles.botaoPressionado]}>
               <Text style={styles.botaoReciboTexto}>Mandar recibo</Text>
             </Pressable>
-            {podeDesfazer ? (
+            {diaConfirmado ? null : (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Desfazer a coleta no ${sitio}`}
@@ -94,9 +96,9 @@ export function Parada({
                 style={styles.desfazer}>
                 <Text style={styles.desfazerTexto}>Desfazer coleta</Text>
               </Pressable>
-            ) : null}
+            )}
           </View>
-        ) : perguntando ? (
+        ) : diaConfirmado ? null : perguntando ? (
           <QuantasVieram
             avisadas={avisadas}
             onConfirmar={(vieram) => {
