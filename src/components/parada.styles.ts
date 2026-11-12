@@ -91,4 +91,62 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.verdeEscuro,
   },
+  desfazer: {
+    paddingVertical: Spacing.one,
+  },
+  desfazerTexto: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: Cacua.textoSecundario,
+    textDecorationLine: 'underline',
+  },
+  // "Quantas caixas vieram?" (S7.6): ocupa a linha toda, embaixo do texto da parada.
+  pergunta: {
+    flexBasis: '100%',
+    gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: Spacing.two + Spacing.one,
+    backgroundColor: Cacua.fundo,
+  },
+  perguntaTitulo: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: Cacua.texto,
+  },
+  campoDaFruta: {
+    gap: Spacing.one,
+  },
+  rotuloDaFruta: {
+    fontSize: 14,
+    color: Cacua.textoSecundario,
+  },
+  erro: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: Cacua.vermelho,
+  },
+  botoesDaPergunta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  botaoCheio: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.two + Spacing.one,
+    backgroundColor: Cacua.verde,
+  },
+  botaoCheioPressionado: {
+    backgroundColor: Cacua.verdeEscuro,
+  },
+  botaoCheioTexto: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: Cacua.superficie,
+  },
+  desligado: {
+    opacity: 0.5,
+  },
 });

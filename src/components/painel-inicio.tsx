@@ -44,7 +44,8 @@ export function PainelInicio({ hoje, saida, semana, paraConfirmar, semanaFraca, 
           Resumo da semana
         </Text>
         <View style={styles.numeros}>
-          <Numero valor={String(semana.caixas)} rotulo="caixas avisadas" />
+          {/* Desde o S7.6, conta as caixas que vieram nas coletas registradas, e não só as avisadas. */}
+          <Numero valor={String(semana.caixas)} rotulo="caixas na semana" />
           <Numero valor={formatarReais(semana.lucro)} rotulo="lucro estimado" />
           <Numero valor={`${semana.diasQueValem} de ${semana.dias}`} rotulo="dias valem a pena" />
           <Numero valor={`${semana.paradasColetadas} de ${semana.paradas}`} rotulo="paradas coletadas" />
