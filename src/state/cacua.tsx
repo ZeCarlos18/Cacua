@@ -10,12 +10,14 @@ import {
   comProdutor,
   estadoInicial,
   semAviso,
+  semColeta,
   semConfirmacao,
   type Custos,
   type EstadoCacua,
 } from '@/state/estado';
 import { apagarEstadoSalvo, carregarEstado, salvarEstado } from '@/state/salvo';
 import type { Aviso } from '@/utils/agenda';
+import type { CaixasPorFruta } from '@/utils/coleta';
 import { errosDoProdutor, type CamposDoProdutor, type ErrosDoProdutor } from '@/utils/novo-produtor';
 
 type ValorCacua = EstadoCacua & {
@@ -37,8 +39,13 @@ type ValorCacua = EstadoCacua & {
   atualizarCustos: (mudancas: Partial<Custos>) => void;
   /** Muda o preço da caixa (ex.: 'banana', 50). */
   atualizarPreco: (fruta: string, preco: number) => void;
-  /** Marca a coleta do produtor no dia (ex.: '30/set', 4). */
-  registrarColeta: (data: string, produtor: number) => void;
+  /**
+   * Marca a coleta do produtor no dia (ex.: '30/set', 4). Desde o S7.3, com as caixas que vieram de
+   * cada fruta ('01/out', 2, { goiaba: 10 }); sem elas, vale o que foi avisado.
+   */
+  registrarColeta: (data: string, produtor: number, caixas?: CaixasPorFruta) => void;
+  /** Desfaz a coleta registrada por engano (S7.3). Em dia confirmado, nada muda. */
+  desfazerColeta: (data: string, produtor: number) => void;
   /** Confirma a coleta do dia (ex.: '30/set'). */
   confirmarDia: (data: string) => void;
   /** Desfaz a confirmação do dia. */
@@ -99,7 +106,8 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
     tirarAviso: (data, posicao, esperado) => setEstado((atual) => semAviso(atual, data, posicao, esperado)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
     atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
-    registrarColeta: (data, produtor) => setEstado((atual) => comColeta(atual, data, produtor)),
+    registrarColeta: (data, produtor, caixas) => setEstado((atual) => comColeta(atual, data, produtor, caixas)),
+    desfazerColeta: (data, produtor) => setEstado((atual) => semColeta(atual, data, produtor)),
     confirmarDia: (data) => setEstado((atual) => comConfirmacao(atual, data)),
     desfazerConfirmacao: (data) => setEstado((atual) => semConfirmacao(atual, data)),
     restaurarPadrao: () => {
