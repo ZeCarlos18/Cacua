@@ -74,3 +74,12 @@ export function avisoPronto({ data, produtor, fruta, caixas }: Escolhas) {
   const aviso: Aviso = { produtor, fruta, caixas };
   return { data, aviso };
 }
+
+/**
+ * A pergunta do "Tirar da agenda" na Conta do dia (S7.5): "Tirar o aviso de 12 caixas de banana do
+ * Seu Pedro?". Com "da" para Dona ("da Dona Lúcia") e "caixa" no singular para 1.
+ */
+export function perguntaParaTirar(nome: string, fruta: string, caixas: number) {
+  const de = /^dona\b/i.test(nome) ? 'da' : 'do';
+  return `Tirar o aviso de ${caixas} ${caixas === 1 ? 'caixa' : 'caixas'} de ${fruta.toLowerCase()} ${de} ${nome}?`;
+}
