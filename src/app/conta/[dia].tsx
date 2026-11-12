@@ -4,6 +4,7 @@ import { ContaDoDia, ContaNaoEncontrada } from '@/components/conta-do-dia';
 import { coletor, posto } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
+import { diaComEntregas } from '@/utils/coleta';
 import { diaPeloId, tituloDaConta } from '@/utils/conta';
 import { diaComKm } from '@/utils/rota';
 
@@ -21,6 +22,7 @@ export default function ContaScreen() {
     precos,
     coletas,
     confirmados,
+    entregas,
     confirmarDia,
     desfazerConfirmacao,
     mudarCaixasDoAviso,
@@ -37,7 +39,8 @@ export default function ContaScreen() {
     );
   }
 
-  const diaDaRota = diaComKm(dia, produtores, posto);
+  // As caixas que vieram na coleta valem na conta do dia (S7.6).
+  const diaDaRota = diaComKm(diaComEntregas(dia, entregas), produtores, posto);
 
   return (
     <>

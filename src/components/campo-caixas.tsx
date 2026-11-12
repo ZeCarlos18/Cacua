@@ -8,10 +8,12 @@ type CampoCaixasProps = {
   /** O que está escrito no campo (pode estar vazio ou inválido enquanto o coletor digita). */
   texto: string;
   onMudar: (texto: string) => void;
+  /** O nome do campo para o leitor de tela; com mais de uma fruta (S7.6), "Caixas de goiaba". */
+  rotulo?: string;
 };
 
 /** As caixas do aviso (S4.4): "−", o campo numérico e "+". O − não desce de 1. */
-export function CampoCaixas({ texto, onMudar }: CampoCaixasProps) {
+export function CampoCaixas({ texto, onMudar, rotulo = 'Caixas' }: CampoCaixasProps) {
   function passo(sinal: 1 | -1) {
     const caixas = caixasComPasso(lerCaixas(texto), sinal);
     onMudar(caixas === null ? '' : String(caixas));
@@ -21,7 +23,7 @@ export function CampoCaixas({ texto, onMudar }: CampoCaixasProps) {
     <View style={styles.campoCaixas}>
       <BotaoDePasso texto="−" rotulo="Uma caixa a menos" onPress={() => passo(-1)} />
       <TextInput
-        accessibilityLabel="Caixas"
+        accessibilityLabel={rotulo}
         keyboardType="number-pad"
         placeholder="0"
         value={texto}
