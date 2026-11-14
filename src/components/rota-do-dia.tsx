@@ -7,9 +7,9 @@ import { Selo } from '@/components/selo';
 import { useColetor } from '@/state/acesso';
 import type { Aviso } from '@/utils/agenda';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
-import { caixasAvisadas, type CaixasPorFruta } from '@/utils/coleta';
+import { caixasAvisadas, type CaixasPorFruta, type Entregas } from '@/utils/coleta';
 import type { AreaDoMapa } from '@/utils/mapa-rota';
-import { textoDoRecibo } from '@/utils/recibo';
+import { itensDoRecibo, textoDoRecibo } from '@/utils/recibo';
 import type { Parada as ParadaDaRota, Posicao } from '@/utils/rota';
 import { caixasColetadas, resumoDaRota, textoDoColetado, totalDeCaixas } from '@/utils/rota-do-dia';
 
@@ -23,6 +23,11 @@ type RotaDoDiaProps = {
    * vieram?" já vem com eles, e a parada e o recibo mostram o "(avisou 12)".
    */
   avisados: Aviso[];
+  /** As caixas que vieram em cada coleta (S7.3) e o preço do Ceasa, para o valor do recibo (S8.2). */
+  entregas: Entregas;
+  precos: Parameters<typeof itensDoRecibo>[3];
+  /** Os custos do coletor: o recibo mostra a porcentagem que o produtor recebe (pagoProdutor). */
+  custos: Parameters<typeof itensDoRecibo>[4];
   /** As paradas na ordem da montarRota, já com as caixas que vieram (diaComEntregas, S7.3). */
   paradas: ParadaDaRota[];
   km: number;
@@ -51,6 +56,9 @@ type RotaDoDiaProps = {
 export function RotaDoDia({
   dia,
   avisados,
+  entregas,
+  precos,
+  custos,
   paradas,
   km,
   conta,
@@ -92,8 +100,10 @@ export function RotaDoDia({
       <View style={[styles.cartao, styles.cartaoParadas]}>
         {paradas.map((parada, posicao) => {
           const avisadas = caixasAvisadas({ avisos: avisados }, parada.id);
-          // Calculado só aqui: a parada ("avisou 12") e o recibo usam o mesmo número.
+          // Calculado só aqui, para a parada mostrar o "(avisou 12)".
           const totalAvisado = Object.values(avisadas).reduce((soma, quantas) => soma + quantas, 0);
+          // O recibo com o valor em reais e o preço do Ceasa (S8.2).
+          const itens = itensDoRecibo({ data: dia.data, avisos: avisados }, parada.id, entregas, precos, custos);
           return (
             // O dia entra na chave: ao trocar de dia, a parada do mesmo produtor começa do zero, e o
             // "Quantas caixas vieram?" aberto no outro dia fecha (revisão do S7.6).
@@ -108,8 +118,8 @@ export function RotaDoDia({
                 totalAvisado={totalAvisado}
                 coletada={coletados.includes(parada.id)}
                 diaConfirmado={diaConfirmado}
-                // "Goiaba: 10 caixas (avisou 12)" quando o que veio é diferente (S7.3).
-                recibo={textoDoRecibo(dia, parada, coletor, totalAvisado)}
+                // "Goiaba: 10 caixas (avisou 12)" e o valor, com o preço do Ceasa (S7.3 e S8.2).
+                recibo={textoDoRecibo(dia, { nome: parada.produtor, sitio: parada.sitio }, itens, coletor, custos)}
                 onRegistrar={(caixas) => onRegistrar(parada.id, caixas)}
                 onDesfazer={() => onDesfazer(parada.id)}
               />

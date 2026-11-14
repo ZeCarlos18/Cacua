@@ -13,7 +13,7 @@ import {
 import { formatarReais } from '@/utils/calculos';
 import { caixasAvisadas, diaComEntregas } from '@/utils/coleta';
 import { resumoDaSemana, resumoDoDia } from '@/utils/inicio';
-import { textoDoRecibo } from '@/utils/recibo';
+import { itensDoRecibo, textoDoRecibo } from '@/utils/recibo';
 import { montarRota } from '@/utils/rota';
 import { caixasColetadas, textoDoColetado, totalDeCaixas } from '@/utils/rota-do-dia';
 
@@ -45,12 +45,13 @@ function rotaDaQuinta(estado: EstadoCacua) {
   return paradas;
 }
 
-/** A linha das caixas no recibo do produtor na quinta, como a Rota vai montar no S7.6. */
+/** A linha das caixas no recibo do produtor na quinta, como a Rota monta (S7.6 e S8.2). */
 function linhaDoRecibo(estado: EstadoCacua, produtor: number) {
-  const parada = rotaDaQuinta(estado).find((item) => item.id === produtor);
-  if (!parada) throw new Error(`O produtor ${produtor} não está na rota de quinta.`);
-  const avisadas = Object.values(caixasAvisadas(diaDa(estado, '01/out'), produtor)).reduce((soma, n) => soma + n, 0);
-  return textoDoRecibo(diaDa(estado, '01/out'), parada, coletor, avisadas).split('\n')[3];
+  const dono = estado.produtores.find((item) => item.id === produtor);
+  if (!dono) throw new Error(`O produtor ${produtor} não está cadastrado.`);
+  const dia = diaDa(estado, '01/out');
+  const itens = itensDoRecibo(dia, produtor, estado.entregas, estado.precos, estado.custos);
+  return textoDoRecibo(dia, dono, itens, coletor, estado.custos).split('\n')[3];
 }
 
 const inicio = estadoInicial();
