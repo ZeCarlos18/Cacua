@@ -109,10 +109,20 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.texto,
   },
+  // As caixas e, embaixo, o valor do aviso coletado (S8.5), os dois alinhados à direita.
+  produtorQuanto: {
+    alignItems: 'flex-end',
+  },
   produtorCaixas: {
     fontSize: 15,
     lineHeight: 22,
     color: Cacua.texto,
+  },
+  produtorValor: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
   },
   produtorBase: {
     flexDirection: 'row',
