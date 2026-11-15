@@ -9,9 +9,13 @@ import type { Aviso } from '@/utils/agenda';
 import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
 import { chaveDaEntrega, type CaixasPorFruta, type Entregas } from '@/utils/coleta';
 import { errosDoProdutor, novoProdutor, type CamposDoProdutor } from '@/utils/novo-produtor';
+import { ehDataValida } from '@/utils/preco-do-ceasa';
 import type { Posicao } from '@/utils/rota';
 
 export type Custos = typeof custos;
+
+/** O dia do boletim do Ceasa no dados.js, para o preço salvo sem data (S8.1). */
+const DATA_DO_BOLETIM = '2026-09-22';
 
 /** Um produtor da região (S7.1): os 6 do dados.js e os que o coletor cadastra. */
 export type Produtor = {
@@ -35,7 +39,8 @@ export type EstadoCacua = {
   /** Os produtores da região (S7.1), que começam pelos 6 do dados.js. */
   produtores: Produtor[];
   custos: Custos;
-  precos: Record<string, { preco: number; kg: number }>;
+  /** O preço da caixa no Ceasa e o dia em que ele foi atualizado, 'AAAA-MM-DD' (S8.1). */
+  precos: Record<string, { preco: number; kg: number; data: string }>;
   /** Ids dos produtores já coletados em cada dia (S5.1), ex.: { '01/out': [3] }. */
   coletas: Record<string, number[]>;
   /** Datas dos dias com a coleta confirmada (S5.1), ex.: ['30/set']. */
@@ -147,10 +152,11 @@ export function comCustos(estado: EstadoCacua, mudancas: Partial<Custos>): Estad
 }
 
 /** Muda o preço da caixa. Fruta sem preço (como o coco) não entra, porque falta o peso da caixa. */
-export function comPreco(estado: EstadoCacua, fruta: string, preco: number): EstadoCacua {
+export function comPreco(estado: EstadoCacua, fruta: string, preco: number, hoje: string): EstadoCacua {
   const atual = estado.precos[fruta];
   if (!atual) return estado;
-  return { ...estado, precos: { ...estado.precos, [fruta]: { ...atual, preco } } };
+  // Desde o S8.1, o preço guarda o dia em que foi atualizado ('AAAA-MM-DD').
+  return { ...estado, precos: { ...estado.precos, [fruta]: { ...atual, preco, data: hoje } } };
 }
 
 /**
@@ -220,7 +226,8 @@ export function semConfirmacao(estado: EstadoCacua, data: string): EstadoCacua {
  * cada dia têm que ser listas de ids e as confirmações, listas de datas; o formato antigo, com
  * `coletados`, não serve. Desde o S7.1, os produtores também ficam salvos; o salvo de antes, sem
  * `produtores` (ou sem nenhum que sirva), usa os 6 do dados.js e mantém o resto. Desde o S7.3, as
- * caixas que vieram também; o salvo sem `entregas` começa com {}.
+ * caixas que vieram também; o salvo sem `entregas` começa com {}. Desde o S8.1, o preço salvo sem
+ * `data` fica com a do boletim ('2026-09-22').
  */
 export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
   if (!texto) return null;
@@ -252,11 +259,32 @@ export function estadoDoSalvo(texto: string | null): EstadoCacua | null {
     agenda: salvo.agenda,
     produtores: produtoresDoSalvo(salvo.produtores) ?? padrao.produtores,
     custos: { ...padrao.custos, ...salvo.custos },
-    precos: { ...padrao.precos, ...salvo.precos },
+    precos: precosDoSalvo(salvo.precos, padrao.precos),
     coletas: salvo.coletas,
     confirmados: salvo.confirmados,
     entregas: entregasDoSalvo(salvo.entregas),
   };
+}
+
+/**
+ * Os preços do salvo, com os do dados.js que faltarem. Desde o S8.1, cada preço tem a `data`; o
+ * preço salvo sem ela (de antes desta sprint), ou com uma data que não serve, fica com a do
+ * boletim do dados.js ('2026-09-22'), e aparece como antigo.
+ */
+function precosDoSalvo(
+  salvos: Record<string, Record<string, unknown>>,
+  padrao: EstadoCacua['precos'],
+): EstadoCacua['precos'] {
+  const precos: EstadoCacua['precos'] = { ...padrao };
+  for (const [fruta, salvo] of Object.entries(salvos)) {
+    const doBoletim = padrao[fruta]?.data ?? DATA_DO_BOLETIM;
+    precos[fruta] = {
+      ...padrao[fruta],
+      ...(salvo as { preco: number; kg: number }),
+      data: ehDataValida(salvo?.data) ? salvo.data : doBoletim,
+    };
+  }
+  return precos;
 }
 
 /**

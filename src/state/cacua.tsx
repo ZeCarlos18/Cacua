@@ -19,6 +19,7 @@ import { apagarEstadoSalvo, carregarEstado, salvarEstado } from '@/state/salvo';
 import type { Aviso } from '@/utils/agenda';
 import type { CaixasPorFruta } from '@/utils/coleta';
 import { errosDoProdutor, type CamposDoProdutor, type ErrosDoProdutor } from '@/utils/novo-produtor';
+import { hojeNoCelular } from '@/utils/preco-do-ceasa';
 
 type ValorCacua = EstadoCacua & {
   /** Cadastra o produtor novo (S7.1). Devolve os erros de cada campo, ou null se deu certo. */
@@ -37,7 +38,7 @@ type ValorCacua = EstadoCacua & {
   tirarAviso: (data: string, posicao: number, esperado?: Aviso) => void;
   /** Muda só os campos enviados (ex.: { diesel: 7.5 }). */
   atualizarCustos: (mudancas: Partial<Custos>) => void;
-  /** Muda o preço da caixa (ex.: 'banana', 50). */
+  /** Muda o preço da caixa (ex.: 'banana', 50) e grava a data de hoje do celular (S8.1). */
   atualizarPreco: (fruta: string, preco: number) => void;
   /**
    * Marca a coleta do produtor no dia (ex.: '30/set', 4). Desde o S7.3, com as caixas que vieram de
@@ -113,7 +114,8 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
       setEstado((atual) => comCaixasDoAviso(atual, data, posicao, caixas, esperado)),
     tirarAviso: (data, posicao, esperado) => setEstado((atual) => semAviso(atual, data, posicao, esperado)),
     atualizarCustos: (mudancas) => setEstado((atual) => comCustos(atual, mudancas)),
-    atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco)),
+    // O preço guarda o dia do celular em que foi mudado (S8.1).
+    atualizarPreco: (fruta, preco) => setEstado((atual) => comPreco(atual, fruta, preco, hojeNoCelular())),
     registrarColeta: (data, produtor, caixas) => setEstado((atual) => comColeta(atual, data, produtor, caixas)),
     desfazerColeta: (data, produtor) => setEstado((atual) => semColeta(atual, data, produtor)),
     confirmarDia: (data) => setEstado((atual) => comConfirmacao(atual, data)),
