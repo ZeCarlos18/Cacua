@@ -52,11 +52,27 @@ conferir(
     ].join('\n'),
 );
 
-// Sem a data do preço (antes do S8.1 entrar)
-const semData = recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio);
+// Com os preços do dados.js, que desde o S8.1 têm a data do boletim
+conferir(
+  'Com os preços do dados.js: "Ceasa: R$ 60,00 a caixa em 22/09 · você recebe 80%"',
+  recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio).texto.split('\n')[5] ===
+    'Ceasa: R$ 60,00 a caixa em 22/09 · você recebe 80%',
+);
+
+// Sem a data do preço (como antes do S8.1): os preços montados sem o campo `data`
+const semDataNoPreco = Object.fromEntries(
+  Object.entries(precos).map(([fruta, { preco, kg }]) => [fruta, { preco, kg }]),
+);
+const semData = recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio, semDataNoPreco);
 conferir(
   'Sem a data do preço: "Ceasa: R$ 60,00 a caixa · você recebe 80%"',
   semData.texto.split('\n')[5] === 'Ceasa: R$ 60,00 a caixa · você recebe 80%',
+);
+const dataRuim = { ...precos, goiaba: { ...precos.goiaba, data: '22/09' } };
+conferir(
+  'Data fora do formato: a linha sai sem o "em", e não com "undefined"',
+  recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio, dataRuim).texto.split('\n')[5] ===
+    'Ceasa: R$ 60,00 a caixa · você recebe 80%',
 );
 conferir('Seu Antônio: total R$ 480,00', totalDoRecibo(semData.itens) === 480);
 conferir(
