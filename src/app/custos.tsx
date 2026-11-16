@@ -3,13 +3,14 @@ import { useCallback, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CampoNumerico } from '@/components/campo-numerico';
+import { CartaoPreco } from '@/components/cartao-preco';
 import { Lista } from '@/components/lista';
 import { Tela } from '@/components/tela';
 import { Cacua, Spacing } from '@/constants/theme';
 import { useCacua } from '@/state/cacua';
 import type { Custos } from '@/state/estado';
-import { capitalizar } from '@/utils/agenda';
 import type { Unidade } from '@/utils/custos';
+import { hojeNoCelular } from '@/utils/preco-do-ceasa';
 
 /** Os custos do coletor, na ordem do Figma: nome, explicação e unidade do campo. */
 const SEUS_CUSTOS: { campo: keyof Custos; nome: string; explicacao: string; unidade: Unidade }[] = [
@@ -26,6 +27,8 @@ export default function CustosScreen() {
   const { custos, precos, atualizarCustos, atualizarPreco, restaurarPadrao } = useCacua();
   // Muda a cada "Voltar aos valores do Figma": os campos renascem e perdem o que estava sendo digitado.
   const [geracao, setGeracao] = useState(0);
+  // O dia do celular, para o "atualizado há 56 dias" de cada preço (S8.4).
+  const hoje = hojeNoCelular();
 
   // Sair da tela com o teclado aberto tira o foco do campo, e o valor digitado vale na Agenda.
   useFocusEffect(useCallback(() => () => Keyboard.dismiss(), []));
@@ -39,25 +42,22 @@ export default function CustosScreen() {
     // Abre pelo Início, por cima das abas (S6.5): sem o topo do app, com o título e o voltar na barra.
     <Tela
       titulo="Custos e preços"
-      descricao="Ceasa Cariri · preço mais comum no boletim de 22/09/2026."
+      descricao="Confira o preço do dia no boletim da Ceasa ou no app Prohort Ceasas, da Conab."
       cabecalhoNativo>
       <KeyboardAvoidingView behavior="padding" style={styles.teclado}>
         <Lista keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.grade}>
-            {Object.entries(precos).map(([fruta, { preco, kg }]) => (
-              <View key={fruta} style={styles.preco}>
-                <Text style={styles.nome}>{capitalizar(fruta)}</Text>
-                <Text style={styles.explicacao}>cx {kg} kg</Text>
-                <View style={styles.campoPreco}>
-                  <CampoNumerico
-                    key={geracao}
-                    valor={preco}
-                    unidade="reais"
-                    rotulo={`Preço da caixa de ${fruta}`}
-                    onMudar={(novo) => atualizarPreco(fruta, novo)}
-                  />
-                </View>
-              </View>
+            {/* Cada preço com a data em que foi atualizado e o selo "Preço antigo" (S8.4). */}
+            {Object.entries(precos).map(([fruta, { preco, kg, data }]) => (
+              <CartaoPreco
+                key={`${fruta}-${geracao}`}
+                fruta={fruta}
+                preco={preco}
+                kg={kg}
+                data={data}
+                hoje={hoje}
+                onMudar={(novo) => atualizarPreco(fruta, novo)}
+              />
             ))}
           </View>
 
@@ -101,14 +101,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
-  preco: {
-    width: '48%',
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
-    borderWidth: 1,
-    borderColor: Cacua.borda,
-    backgroundColor: Cacua.superficie,
-  },
   tituloSecao: {
     fontSize: 20,
     fontWeight: 700,
@@ -141,9 +133,6 @@ const styles = StyleSheet.create({
   explicacao: {
     fontSize: 14,
     color: Cacua.textoSecundario,
-  },
-  campoPreco: {
-    marginTop: Spacing.two,
   },
   botao: {
     minHeight: 44,
