@@ -53,6 +53,13 @@ export const styles = StyleSheet.create({
     lineHeight: 20,
     color: Cacua.textoSecundario,
   },
+  // O valor ao produtor (S8.5), em destaque embaixo das caixas.
+  valor: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
+  },
   coletado: {
     // O Selo e o "Mandar recibo" alinhados pela esquerda, também quando descem para baixo do texto.
     alignItems: 'flex-start',
@@ -107,6 +114,26 @@ export const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: Spacing.two + Spacing.one,
     backgroundColor: Cacua.fundo,
+  },
+  // A prévia do recibo (S8.5): como a pergunta, ocupa a linha toda embaixo da parada.
+  previa: {
+    flexBasis: '100%',
+    gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: Spacing.two + Spacing.one,
+    backgroundColor: Cacua.fundo,
+  },
+  textoDoRecibo: {
+    padding: Spacing.two + Spacing.one,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: Cacua.borda,
+    backgroundColor: Cacua.superficie,
+  },
+  reciboTexto: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: Cacua.texto,
   },
   perguntaTitulo: {
     fontSize: 15,

@@ -9,7 +9,7 @@ import type { Aviso } from '@/utils/agenda';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 import { caixasAvisadas, type CaixasPorFruta, type Entregas } from '@/utils/coleta';
 import type { AreaDoMapa } from '@/utils/mapa-rota';
-import { itensDoRecibo, textoDoRecibo } from '@/utils/recibo';
+import { itensDoRecibo, textoDoRecibo, textoDoValor } from '@/utils/recibo';
 import type { Parada as ParadaDaRota, Posicao } from '@/utils/rota';
 import { caixasColetadas, resumoDaRota, textoDoColetado, totalDeCaixas } from '@/utils/rota-do-dia';
 
@@ -102,7 +102,7 @@ export function RotaDoDia({
           const avisadas = caixasAvisadas({ avisos: avisados }, parada.id);
           // Calculado só aqui, para a parada mostrar o "(avisou 12)".
           const totalAvisado = Object.values(avisadas).reduce((soma, quantas) => soma + quantas, 0);
-          // O recibo com o valor em reais e o preço do Ceasa (S8.2).
+          // O recibo com o valor em reais e o preço do Ceasa (S8.2); a parada mostra o mesmo valor (S8.5).
           const itens = itensDoRecibo({ data: dia.data, avisos: avisados }, parada.id, entregas, precos, custos);
           return (
             // O dia entra na chave: ao trocar de dia, a parada do mesmo produtor começa do zero, e o
@@ -120,6 +120,7 @@ export function RotaDoDia({
                 diaConfirmado={diaConfirmado}
                 // "Goiaba: 10 caixas (avisou 12)" e o valor, com o preço do Ceasa (S7.3 e S8.2).
                 recibo={textoDoRecibo(dia, { nome: parada.produtor, sitio: parada.sitio }, itens, coletor, custos)}
+                valor={textoDoValor(itens)}
                 onRegistrar={(caixas) => onRegistrar(parada.id, caixas)}
                 onDesfazer={() => onDesfazer(parada.id)}
               />
