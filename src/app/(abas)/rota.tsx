@@ -73,6 +73,9 @@ export default function RotaScreen() {
         <RotaDoDia
           dia={dia}
           avisados={dia.avisos}
+          entregas={entregas}
+          precos={precos}
+          custos={custos}
           paradas={paradas}
           km={km}
           conta={calcularLucroDoDia({ ...diaQueVeio, km }, precos, custos)}
