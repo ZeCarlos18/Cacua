@@ -12,7 +12,7 @@ import {
   type EstadoCacua,
 } from '@/state/estado';
 import { formatarReais } from '@/utils/calculos';
-import { extratoDoProdutor, textoDoExtrato, totalDoExtrato } from '@/utils/extrato';
+import { extratoDoProdutor, textoDoExtrato, totalDoExtrato, type DadosDoExtrato } from '@/utils/extrato';
 import { itensDoRecibo, totalDoRecibo } from '@/utils/recibo';
 
 let falhas = 0;
@@ -29,13 +29,20 @@ function produtor(estado: EstadoCacua, nome: string) {
 }
 
 /** O extrato e o texto, como a tela do S8.6 vai montar. */
-function extrato(estado: EstadoCacua, nome: string, precos: EstadoCacua['precos'] = estado.precos) {
+function extrato(estado: EstadoCacua, nome: string, precos: DadosDoExtrato['precos'] = estado.precos) {
   const dono = produtor(estado, nome);
   const linhas = extratoDoProdutor(dono, { ...estado, precos });
   return { linhas, total: totalDoExtrato(linhas), texto: textoDoExtrato(dono, linhas, coletor, estado.custos, precos) };
 }
 
 const linhasDoTexto = (texto: string | null) => (texto ?? '').split('\n');
+
+/**
+ * Os preços sem o campo `data`, como antes do S8.1. Os casos "sem data" usam estes, e não os do
+ * dados.js (que desde o S8.1 têm a data): assim o teste passa antes e depois do S8.1.
+ */
+const semDataNoPreco = (precos: EstadoCacua['precos']) =>
+  Object.fromEntries(Object.entries(precos).map(([fruta, { preco, kg }]) => [fruta, { preco, kg }]));
 
 // Dona Maria: coletada na quinta, já no dados.js
 const inicio = estadoInicial();
@@ -50,8 +57,19 @@ conferir(
   maria.total.caixas === 20 && formatarReais(maria.total.valor) === 'R$ 960,00' && linhasDoTexto(maria.texto)[3] === 'Total: 20 caixas · R$ 960,00',
 );
 conferir(
-  'Sem a data do preço (antes do S8.1): "Ceasa: manga R$ 60,00 · você recebe 80%"',
-  linhasDoTexto(maria.texto)[4] === 'Ceasa: manga R$ 60,00 · você recebe 80%',
+  'Com os preços do dados.js: "Ceasa: manga R$ 60,00 em 22/09 · você recebe 80%"',
+  linhasDoTexto(maria.texto)[4] === 'Ceasa: manga R$ 60,00 em 22/09 · você recebe 80%',
+);
+conferir(
+  'Sem a data do preço (como antes do S8.1): "Ceasa: manga R$ 60,00 · você recebe 80%"',
+  linhasDoTexto(extrato(inicio, 'Dona Maria', semDataNoPreco(inicio.precos)).texto)[4] ===
+    'Ceasa: manga R$ 60,00 · você recebe 80%',
+);
+conferir(
+  'Data fora do formato: a linha sai sem o "em", e não com "undefined"',
+  linhasDoTexto(
+    extrato(inicio, 'Dona Maria', { ...inicio.precos, manga: { ...inicio.precos.manga, data: '22/09' } }).texto,
+  )[4] === 'Ceasa: manga R$ 60,00 · você recebe 80%',
 );
 conferir('O texto termina com "Coletor: Edson"', linhasDoTexto(maria.texto).at(-1) === 'Coletor: Edson');
 
@@ -89,7 +107,8 @@ conferir(
 );
 conferir(
   'Sem a data: "Ceasa: goiaba R$ 60,00, manga R$ 60,00 · você recebe 80%"',
-  linhasDoTexto(antonio.texto)[5] === 'Ceasa: goiaba R$ 60,00, manga R$ 60,00 · você recebe 80%',
+  linhasDoTexto(extrato(quintaESexta, 'Seu Antônio', semDataNoPreco(quintaESexta.precos)).texto)[5] ===
+    'Ceasa: goiaba R$ 60,00, manga R$ 60,00 · você recebe 80%',
 );
 
 // Desfazer a coleta da sexta
@@ -113,7 +132,8 @@ conferir(
     linhasDoTexto(pedroCoco.texto)[3] === 'Total: 8 caixas' &&
     !(pedroCoco.texto ?? '').includes('Ceasa:'),
 );
-const pedroBananaECoco = extrato(comColeta(comCoco, '02/out', 6), 'Seu Pedro');
+const comBanana = comColeta(comCoco, '02/out', 6);
+const pedroBananaECoco = extrato(comBanana, 'Seu Pedro', semDataNoPreco(comBanana.precos));
 conferir(
   'Seu Pedro com banana na sexta e coco no sábado: 20 caixas · R$ 403,20, e o Ceasa só da banana',
   pedroBananaECoco.total.caixas === 20 &&
