@@ -3,7 +3,7 @@
 
 import { agenda, coletor, custos, precos } from '@/data/dados';
 import { chaveDaEntrega, type Entregas } from '@/utils/coleta';
-import { itensDoRecibo, textoDoRecibo, totalDoRecibo } from '@/utils/recibo';
+import { itensDoRecibo, textoDoRecibo, textoDoValor, totalDoRecibo, valorDoAviso } from '@/utils/recibo';
 
 let falhas = 0;
 
@@ -52,11 +52,27 @@ conferir(
     ].join('\n'),
 );
 
-// Sem a data do preço (antes do S8.1 entrar)
-const semData = recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio);
+// Com os preços do dados.js, que desde o S8.1 têm a data do boletim
+conferir(
+  'Com os preços do dados.js: "Ceasa: R$ 60,00 a caixa em 22/09 · você recebe 80%"',
+  recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio).texto.split('\n')[5] ===
+    'Ceasa: R$ 60,00 a caixa em 22/09 · você recebe 80%',
+);
+
+// Sem a data do preço (como antes do S8.1): os preços montados sem o campo `data`
+const semDataNoPreco = Object.fromEntries(
+  Object.entries(precos).map(([fruta, { preco, kg }]) => [fruta, { preco, kg }]),
+);
+const semData = recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio, semDataNoPreco);
 conferir(
   'Sem a data do preço: "Ceasa: R$ 60,00 a caixa · você recebe 80%"',
   semData.texto.split('\n')[5] === 'Ceasa: R$ 60,00 a caixa · você recebe 80%',
+);
+const dataRuim = { ...precos, goiaba: { ...precos.goiaba, data: '22/09' } };
+conferir(
+  'Data fora do formato: a linha sai sem o "em", e não com "undefined"',
+  recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio, dataRuim).texto.split('\n')[5] ===
+    'Ceasa: R$ 60,00 a caixa · você recebe 80%',
 );
 conferir('Seu Antônio: total R$ 480,00', totalDoRecibo(semData.itens) === 480);
 conferir(
@@ -187,6 +203,35 @@ conferir(
   'Só as frutas do produtor: o recibo do Seu Antônio na quinta não tem manga nem maracujá',
   !recibo(quinta, { id: 2, ...antonio }).texto.includes('Manga') &&
     !recibo(quinta, { id: 2, ...antonio }).texto.includes('Maracujá'),
+);
+
+// O valor da coleta na parada da Rota e no "Quem avisou" da Conta (S8.5)
+conferir('Parada do Seu Antônio com 10 caixas: "R$ 480,00 ao produtor"', textoDoValor(semData.itens) === 'R$ 480,00 ao produtor');
+conferir(
+  'Parada da Dona Maria: "R$ 960,00 ao produtor"',
+  textoDoValor(recibo(quinta, { id: 3, nome: 'Dona Maria', sitio: 'Sítio Riacho Verde' }).itens) === 'R$ 960,00 ao produtor',
+);
+conferir(
+  'Goiaba a R$ 70,00: "R$ 560,00 ao produtor"',
+  textoDoValor(recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio, goiaba70).itens) === 'R$ 560,00 ao produtor',
+);
+conferir('Coco e banana: "R$ 403,20 ao produtor + coco a combinar"', textoDoValor(pedro.itens) === 'R$ 403,20 ao produtor + coco a combinar');
+conferir('Só coco: "Coco a combinar"', textoDoValor(soCoco.itens) === 'Coco a combinar');
+conferir('Conta: o aviso do Seu Antônio com 10 caixas vale R$ 480,00', valorDoAviso(semData.itens, 'goiaba', 10) === 480);
+conferir('Conta: o coco não tem valor (null)', valorDoAviso(pedro.itens, 'coco', 8) === null);
+conferir(
+  'Conta: goiaba avisada 5 e 7, vieram 11 → os avisos valem R$ 528,00 e R$ 0,00',
+  valorDoAviso(duasVezes.itens, 'goiaba', 11) === 528 && valorDoAviso(duasVezes.itens, 'goiaba', 0) === 0,
+);
+conferir(
+  'Conta e recibo com o mesmo valor: R$ 61,00 a 82,5%, 10 caixas = R$ 503,30 nos dois',
+  (() => {
+    const itens = recibo(quinta, { id: 2, ...antonio }, entregaDoAntonio, { ...precos, goiaba: { preco: 61 } }, {
+      ...custos,
+      pagoProdutor: 0.825,
+    }).itens;
+    return valorDoAviso(itens, 'goiaba', 10) === 503.3 && totalDoRecibo(itens) === 503.3;
+  })(),
 );
 
 if (falhas > 0) {

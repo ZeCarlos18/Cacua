@@ -49,11 +49,11 @@ conferir(
   contaDoDia(lucroMinimo, '02/out').selo === 'Vale a pena',
 );
 
-const banana = comPreco(inicio, 'banana', 50);
+const banana = comPreco(inicio, 'banana', 50, '2026-11-13');
 conferir('Banana R$ 50: a quarta vai para R$ 42,30', contaDoDia(banana, '30/set').lucro === 42.3);
 conferir('Banana R$ 50: a sexta vai para R$ 125,22', contaDoDia(banana, '02/out').lucro === 125.22);
 conferir('Banana R$ 50: o peso da caixa continua', banana.precos.banana.kg === inicio.precos.banana.kg);
-conferir('Fruta sem preço (coco) não muda nada', comPreco(inicio, 'coco', 30) === inicio);
+conferir('Fruta sem preço (coco) não muda nada', comPreco(inicio, 'coco', 30, '2026-11-13') === inicio);
 
 // Novo aviso (S4.4)
 const quarta = comAviso(inicio, '30/set', { produtor: 1, fruta: 'goiaba', caixas: 20 });

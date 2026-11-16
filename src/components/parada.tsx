@@ -26,8 +26,10 @@ type ParadaProps = {
   coletada: boolean;
   /** Dia confirmado: sem "Registrar coleta" e sem "Desfazer coleta" (primeiro desfaz a confirmação). */
   diaConfirmado: boolean;
-  /** O texto do recibo (textoDoRecibo), que o "Mandar recibo" abre no compartilhar (S5.2). */
+  /** O texto do recibo (textoDoRecibo): o "Mandar recibo" mostra a prévia e abre o compartilhar. */
   recibo: string;
+  /** O valor da coleta (textoDoValor, S8.5): "R$ 480,00 ao produtor", "+ coco a combinar". */
+  valor: string;
   /** Registra a coleta com as caixas que vieram de cada fruta ({ goiaba: 10 }). */
   onRegistrar: (caixas: CaixasPorFruta) => void;
   onDesfazer: () => void;
@@ -36,8 +38,10 @@ type ParadaProps = {
 /**
  * Uma parada da Rota do dia (S3.2), como no Figma: o número no círculo, o sítio, o produtor e
  * "Goiaba · 12 caixas". O "Registrar coleta" pergunta, na própria parada, quantas caixas vieram
- * (S7.6). Depois da coleta: o Selo "Coletado", "10 caixas (avisou 12)" quando o número mudou, e os
- * botões "Mandar recibo" (S5.2) e "Desfazer coleta". Quem sabe se está coletada é a tela (S3.3).
+ * (S7.6). Depois da coleta: o Selo "Coletado", "10 caixas (avisou 12)" quando o número mudou, o
+ * valor ao produtor (S8.5) e os botões "Mandar recibo" (S5.2) e "Desfazer coleta". O "Mandar
+ * recibo" mostra antes a prévia do texto, na própria parada (S8.5). Quem sabe se está coletada é a
+ * tela (S3.3).
  */
 export function Parada({
   numero,
@@ -50,10 +54,12 @@ export function Parada({
   coletada,
   diaConfirmado,
   recibo,
+  valor,
   onRegistrar,
   onDesfazer,
 }: ParadaProps) {
   const [perguntando, setPerguntando] = useState(false);
+  const [vendoRecibo, setVendoRecibo] = useState(false);
   const avisou = coletada && caixas !== totalAvisado ? ` (avisou ${totalAvisado})` : '';
 
   return (
@@ -75,23 +81,29 @@ export function Parada({
             {fruta} · {textoDasCaixas(caixas)}
             {avisou}
           </Text>
+          {coletada && valor ? <Text style={styles.valor}>{valor}</Text> : null}
         </View>
 
         {coletada ? (
           <View style={styles.coletado}>
             <Selo texto="Coletado" cor="verde" />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Mandar recibo para ${produtor}`}
-              onPress={() => mandarRecibo(recibo)}
-              style={({ pressed }) => [styles.botaoRecibo, pressed && styles.botaoPressionado]}>
-              <Text style={styles.botaoReciboTexto}>Mandar recibo</Text>
-            </Pressable>
+            {vendoRecibo ? null : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Mandar recibo para ${produtor}`}
+                onPress={() => setVendoRecibo(true)}
+                style={({ pressed }) => [styles.botaoRecibo, pressed && styles.botaoPressionado]}>
+                <Text style={styles.botaoReciboTexto}>Mandar recibo</Text>
+              </Pressable>
+            )}
             {diaConfirmado ? null : (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Desfazer a coleta no ${sitio}`}
-                onPress={onDesfazer}
+                onPress={() => {
+                  setVendoRecibo(false);
+                  onDesfazer();
+                }}
                 hitSlop={8}
                 style={styles.desfazer}>
                 <Text style={styles.desfazerTexto}>Desfazer coleta</Text>
@@ -116,6 +128,48 @@ export function Parada({
             <Text style={styles.botaoTexto}>Registrar coleta</Text>
           </Pressable>
         )}
+
+        {coletada && vendoRecibo ? (
+          <PreviaDoRecibo recibo={recibo} produtor={produtor} onFechar={() => setVendoRecibo(false)} />
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+type PreviaDoReciboProps = {
+  recibo: string;
+  produtor: string;
+  onFechar: () => void;
+};
+
+/**
+ * A prévia do recibo (S8.5): o coletor confere o texto antes de mandar. "Mandar pelo WhatsApp" abre
+ * o compartilhar do celular (o coletor escolhe o WhatsApp e o produtor), e "Fechar" volta.
+ */
+function PreviaDoRecibo({ recibo, produtor, onFechar }: PreviaDoReciboProps) {
+  return (
+    <View style={styles.previa} accessibilityLiveRegion="polite">
+      <Text style={styles.perguntaTitulo}>Recibo para {produtor}</Text>
+      <View style={styles.textoDoRecibo}>
+        <Text style={styles.reciboTexto} selectable>
+          {recibo}
+        </Text>
+      </View>
+      <View style={styles.botoesDaPergunta}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => mandarRecibo(recibo)}
+          style={({ pressed }) => [styles.botaoCheio, pressed && styles.botaoCheioPressionado]}>
+          <Text style={styles.botaoCheioTexto}>Mandar pelo WhatsApp</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Fechar o recibo de ${produtor}`}
+          onPress={onFechar}
+          style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
+          <Text style={styles.botaoTexto}>Fechar</Text>
+        </Pressable>
       </View>
     </View>
   );

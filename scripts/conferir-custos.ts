@@ -81,7 +81,7 @@ conferir('Diesel "7,50": a quinta vai para R$ 483,62', contaDoDia(diesel, '01/ou
 const lucroMinimo = comCustos(inicio, { lucroMinimo: lerCampo('100', 'reais') ?? undefined });
 conferir('Lucro mínimo "100": a sexta vira "Vale a pena"', contaDoDia(lucroMinimo, '02/out').selo === 'Vale a pena');
 
-const banana = comPreco(inicio, 'banana', lerCampo('50', 'reais') ?? 0);
+const banana = comPreco(inicio, 'banana', lerCampo('50', 'reais') ?? 0, '2026-11-13');
 conferir('Banana "50": a quarta vai para R$ 42,30', contaDoDia(banana, '30/set').lucro === 42.3);
 conferir('Banana "50": a sexta vai para R$ 125,22', contaDoDia(banana, '02/out').lucro === 125.22);
 

@@ -27,6 +27,8 @@ type ContaDoDiaProps = {
   confirmado: boolean;
   /** Ids dos produtores já coletados no dia: o aviso deles mostra "Coletado" e não muda (S7.5). */
   coletados: number[];
+  /** O valor de cada aviso, na ordem do "Quem avisou": "R$ 480,00" no aviso coletado (S8.5), ou null. */
+  valores: (string | null)[];
   onConfirmar: () => void;
   onDesfazer: () => void;
   /** Troca as caixas do aviso da posição no "Quem avisou" (S7.5). */
@@ -48,6 +50,7 @@ export function ContaDoDia({
   cargaMinima,
   confirmado,
   coletados,
+  valores,
   onConfirmar,
   onDesfazer,
   onMudarCaixas,
@@ -139,9 +142,13 @@ export function ContaDoDia({
               <View key={aviso.chave} style={styles.produtor}>
                 <View style={styles.produtorTopo}>
                   <Text style={styles.produtorNome}>{aviso.nome}</Text>
-                  <Text style={styles.produtorCaixas}>
-                    {aviso.fruta} · {aviso.caixas} caixas
-                  </Text>
+                  <View style={styles.produtorQuanto}>
+                    <Text style={styles.produtorCaixas}>
+                      {aviso.fruta} · {aviso.caixas} caixas
+                    </Text>
+                    {/* O valor do aviso coletado, o mesmo do recibo (S8.5). */}
+                    {valores[posicao] ? <Text style={styles.produtorValor}>{valores[posicao]}</Text> : null}
+                  </View>
                 </View>
                 <View style={styles.produtorBase}>
                   <Text style={styles.produtorDetalhe}>

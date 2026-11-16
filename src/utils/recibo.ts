@@ -9,6 +9,7 @@ import { capitalizar, type Aviso } from '@/utils/agenda';
 import { formatarReais } from '@/utils/calculos';
 import { caixasAvisadas, diaComEntregas, type Entregas } from '@/utils/coleta';
 import { textoDaPorcentagem } from '@/utils/conta';
+import { dataCurta, ehDataValida } from '@/utils/preco-do-ceasa';
 import { textoDasCaixas } from '@/utils/rota-do-dia';
 
 type DiaDoRecibo = { dia: string; data: string };
@@ -83,12 +84,6 @@ export function totalDoRecibo(itens: ItemDoRecibo[]) {
   return emCentavos(itens.reduce((soma, item) => soma + (item.valor ?? 0), 0));
 }
 
-/** '2026-11-17' → "17/11", ou null se a data não tem esse formato. */
-function dataCurta(data: string) {
-  const partes = /^\d{4}-(\d{2})-(\d{2})$/.exec(data);
-  return partes ? `${partes[2]}/${partes[1]}` : null;
-}
-
 /** As linhas de uma fruta: as caixas e, embaixo, o valor e o preço do Ceasa (ou "valor a combinar"). */
 function linhasDaFruta(item: ItemDoRecibo, custos: CustosDoRecibo) {
   const avisou = item.avisadas !== item.caixas ? ` (avisou ${item.avisadas})` : '';
@@ -98,7 +93,8 @@ function linhasDaFruta(item: ItemDoRecibo, custos: CustosDoRecibo) {
     return [caixas, 'Sem preço do Ceasa no app: valor a combinar'];
   }
 
-  const dia = item.data ? dataCurta(item.data) : null;
+  // "em 22/09" com o dataCurta do S8.1; uma data fora do formato fica de fora, e não vira "undefined".
+  const dia = ehDataValida(item.data) ? dataCurta(item.data) : null;
   const quando = dia ? ` em ${dia}` : '';
   return [
     caixas,
@@ -137,4 +133,34 @@ export function textoDoRecibo(
     ...(temValor ? [`Total: ${formatarReais(totalDoRecibo(itens))}`] : []),
     `Coletado por ${coletor.nome}`,
   ].join('\n');
+}
+
+/** "coco", "coco e caju", "coco, caju e jaca". */
+function listaDeFrutas(frutas: string[]) {
+  if (frutas.length <= 1) return frutas.join('');
+  return `${frutas.slice(0, -1).join(', ')} e ${frutas[frutas.length - 1]}`;
+}
+
+/**
+ * O valor da coleta na parada da Rota (S8.5): "R$ 480,00 ao produtor". Com fruta sem preço do
+ * Ceasa: "R$ 403,20 ao produtor + coco a combinar"; só com fruta sem preço: "Coco a combinar".
+ */
+export function textoDoValor(itens: ItemDoRecibo[]) {
+  const comPreco = itens.some((item) => item.valor !== undefined);
+  const semPreco = listaDeFrutas(itens.filter((item) => item.valor === undefined).map((item) => item.fruta));
+
+  if (!comPreco) return semPreco ? `${capitalizar(semPreco)} a combinar` : '';
+  const total = `${formatarReais(totalDoRecibo(itens))} ao produtor`;
+  return semPreco ? `${total} + ${semPreco} a combinar` : total;
+}
+
+/**
+ * O valor de um aviso coletado, no "Quem avisou" da Conta do dia (S8.5): as caixas que vieram × o
+ * valor da caixa do recibo, para a Conta e o recibo mostrarem o mesmo número. null quando a fruta
+ * não tem preço do Ceasa.
+ */
+export function valorDoAviso(itens: ItemDoRecibo[], fruta: string, caixas: number) {
+  const item = itens.find((doRecibo) => doRecibo.fruta === fruta);
+  if (item?.valorPorCaixa === undefined) return null;
+  return emCentavos(caixas * item.valorPorCaixa);
 }
