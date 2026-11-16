@@ -10,12 +10,13 @@ export const coletor = {
 // abre o WhatsApp sem conversa. Troque pelo número de teste da equipe quando ele for definido.
 export const numeroCacua = '5500000000000';
 
+// data: o dia em que o preço foi atualizado, 'AAAA-MM-DD' (S8.1). Todos são do boletim de 22/09.
 export const precos = {
-  goiaba: { preco: 60, kg: 25 },
-  manga: { preco: 60, kg: 20 },
-  maracujá: { preco: 130, kg: 18 },
-  mamão: { preco: 50, kg: 20 },
-  banana: { preco: 42, kg: 16 },
+  goiaba: { preco: 60, kg: 25, data: '2026-09-22' },
+  manga: { preco: 60, kg: 20, data: '2026-09-22' },
+  maracujá: { preco: 130, kg: 18, data: '2026-09-22' },
+  mamão: { preco: 50, kg: 20, data: '2026-09-22' },
+  banana: { preco: 42, kg: 16, data: '2026-09-22' },
 };
 
 export const custos = {
