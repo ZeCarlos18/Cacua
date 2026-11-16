@@ -9,6 +9,7 @@ import { rotuloDoDia } from '@/utils/aviso';
 import { formatarReais } from '@/utils/calculos';
 import { diaComEntregas, type Entregas } from '@/utils/coleta';
 import { textoDaPorcentagem } from '@/utils/conta';
+import { dataCurta, ehDataValida } from '@/utils/preco-do-ceasa';
 import { avisosDoProdutor } from '@/utils/produtores';
 import { textoDasCaixas } from '@/utils/rota-do-dia';
 
@@ -82,15 +83,6 @@ export function totalDoExtrato(linhas: LinhaDoExtrato[]) {
   };
 }
 
-/**
- * '2026-09-22' → "22/09", ou null se a data não tem esse formato. O S8.1 traz um `dataCurta` igual
- * em preco-do-ceasa.ts; quando ele entrar, dá para usar o de lá.
- */
-function dataCurta(data: string) {
-  const partes = /^\d{4}-(\d{2})-(\d{2})$/.exec(data);
-  return partes ? `${partes[2]}/${partes[1]}` : null;
-}
-
 /** "Qui 01/out · Goiaba · 10 caixas × R$ 48,00 = R$ 480,00", ou "… · 8 caixas · valor a combinar". */
 function textoDaLinha(linha: LinhaDoExtrato) {
   const comeco = `${rotuloDoDia(linha)} · ${capitalizar(linha.fruta)} · ${textoDasCaixas(linha.caixas)}`;
@@ -131,7 +123,8 @@ export function textoDoExtrato(
   const precosDoCeasa = frutas.flatMap((fruta) => {
     const doCeasa = precos[fruta];
     if (!doCeasa) return [];
-    const dia = doCeasa.data ? dataCurta(doCeasa.data) : null;
+    // "em 22/09" com o dataCurta do S8.1; uma data fora do formato fica de fora, e não vira "undefined".
+    const dia = ehDataValida(doCeasa.data) ? dataCurta(doCeasa.data) : null;
     return [`${fruta} ${formatarReais(doCeasa.preco)}${dia ? ` em ${dia}` : ''}`];
   });
 
