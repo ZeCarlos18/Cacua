@@ -66,6 +66,8 @@ function Telas() {
         <Stack.Screen name="custos" options={{ title: 'Custos e preços', headerBackTitle: 'Início' }} />
         {/* O formulário do produtor novo (S7.4), que abre pelo "+ Novo produtor" da aba Produtores. */}
         <Stack.Screen name="produtor/novo" options={{ title: 'Novo produtor', headerBackTitle: 'Produtores' }} />
+        {/* O mesmo formulário, para corrigir um produtor (S9.4); abre pelos detalhes, em /produtor/editar?id=1. */}
+        <Stack.Screen name="produtor/editar" options={{ title: 'Editar produtor', headerBackTitle: 'Voltar' }} />
         {/* O título vira o nome do produtor pela própria tela (Tela com cabecalhoNativo, S6.6). */}
         <Stack.Screen name="produtor/[id]" options={{ title: 'Produtor', headerBackTitle: 'Produtores' }} />
       </Stack.Protected>
