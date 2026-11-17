@@ -5,7 +5,7 @@
  * depende de dados.js e dá para conferir com outros números.
  *
  *   Receita              = soma de caixas × preço do Ceasa
- *   Pago ao produtor     = 80% da receita
+ *   Pago ao produtor     = 80% da receita (desde o S9.2, a porcentagem de cada produtor)
  *   Perda                = 5% da receita
  *   Diesel e desgaste    = km × (diesel ÷ consumo + desgaste por km)
  *   Custos da rota       = diesel e desgaste + outros custos
@@ -43,14 +43,20 @@ export function seloDoLucro(lucro, lucroMinimo) {
 /**
  * Calcula o lucro da rota de um dia da agenda.
  *
- * @param {{ km: number, avisos: { fruta: string, caixas: number }[] }} dia
+ * Desde o S9.2, cada produtor pode ter a sua porcentagem do preço do Ceasa (`combinados`, como o
+ * combinadosDos devolve: { 4: 0.85 }). Aí o pago ao produtor é somado aviso por aviso, com a
+ * porcentagem de cada um. Sem `combinados`, a conta é a de antes: 80% da receita.
+ *
+ * @param {{ km: number, avisos: { fruta: string, caixas: number, produtor?: number }[] }} dia
  * @param {Record<string, { preco: number }>} precos  preço da caixa no Ceasa, por fruta
  * @param {{ pagoProdutor: number, perda: number, kmPorLitro: number, diesel: number,
  *           desgastePorKm: number, outrosCustos: number, lucroMinimo: number }} custos
+ * @param {Record<number, number>} [combinados]  a porcentagem combinada de cada produtor, pelo id
  */
-export function calcularLucroDoDia(dia, precos, custos) {
+export function calcularLucroDoDia(dia, precos, custos, combinados) {
   let caixas = 0;
   let receita = 0;
+  let pagoAvisoPorAviso = 0;
   /** @type {string[]} */
   const frutasSemPreco = [];
 
@@ -58,14 +64,17 @@ export function calcularLucroDoDia(dia, precos, custos) {
     caixas += aviso.caixas;
     const preco = precos[aviso.fruta];
     if (preco) {
-      receita += aviso.caixas * preco.preco;
+      const venda = aviso.caixas * preco.preco;
+      receita += venda;
+      const combinado = aviso.produtor === undefined ? undefined : combinados?.[aviso.produtor];
+      pagoAvisoPorAviso += venda * (combinado ?? custos.pagoProdutor);
     } else if (!frutasSemPreco.includes(aviso.fruta)) {
       // Sem preço do Ceasa a fruta entra na conta valendo zero, e a tela avisa.
       frutasSemPreco.push(aviso.fruta);
     }
   }
 
-  const pagoProdutor = receita * custos.pagoProdutor;
+  const pagoProdutor = combinados ? pagoAvisoPorAviso : receita * custos.pagoProdutor;
   const perda = receita * custos.perda;
   const dieselDesgaste = dia.km * (custos.diesel / custos.kmPorLitro + custos.desgastePorKm);
   const custosRota = dieselDesgaste + custos.outrosCustos;

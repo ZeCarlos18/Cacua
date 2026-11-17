@@ -10,6 +10,7 @@ import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
 import { chaveDaEntrega, type CaixasPorFruta, type Entregas } from '@/utils/coleta';
 import { errosDoProdutor, novoProdutor, type CamposDoProdutor } from '@/utils/novo-produtor';
 import { ehDataValida } from '@/utils/preco-do-ceasa';
+import { fracaoCombinadaValida } from '@/utils/produtores';
 import type { Posicao } from '@/utils/rota';
 
 export type Custos = typeof custos;
@@ -32,6 +33,11 @@ export type Produtor = {
   posicao: Posicao;
   /** O texto da próxima colheita quando não tem aviso na agenda (S3.5). */
   previsao?: string;
+  /**
+   * O preço combinado com ele (S9.2): a fração do preço do Ceasa que ele recebe (0.85 = 85%). Sem
+   * ela, vale a de Custos e preços (custos.pagoProdutor).
+   */
+  pagoProdutor?: number;
 };
 
 export type EstadoCacua = {
@@ -70,6 +76,30 @@ export function comProdutor(estado: EstadoCacua, campos: CamposDoProdutor): Esta
   if (errosDoProdutor(campos, estado.produtores)) return estado;
   const id = Math.max(0, ...estado.produtores.map((produtor) => produtor.id)) + 1;
   return { ...estado, produtores: [...estado.produtores, novoProdutor(campos, id)] };
+}
+
+/** O produtor sem o preço combinado: volta a valer a porcentagem padrão de Custos e preços. */
+function semPrecoCombinado(produtor: Produtor): Produtor {
+  const copia = { ...produtor };
+  delete copia.pagoProdutor;
+  return copia;
+}
+
+/**
+ * Combina com o produtor a porcentagem do preço do Ceasa que ele recebe (S9.2), por exemplo 0.85
+ * (85%). A fração tem que ser maior que 0 e até 1 (100%); fora disso (0, 1.2, NaN), ou com um id
+ * que não está na lista, nada muda. `null` tira o combinado, e ele volta para o padrão.
+ */
+export function comPrecoCombinado(estado: EstadoCacua, id: number, fracao: number | null): EstadoCacua {
+  if (!estado.produtores.some((produtor) => produtor.id === id)) return estado;
+  if (fracao !== null && !fracaoCombinadaValida(fracao)) return estado;
+  return {
+    ...estado,
+    produtores: estado.produtores.map((produtor) => {
+      if (produtor.id !== id) return produtor;
+      return fracao === null ? semPrecoCombinado(produtor) : { ...produtor, pagoProdutor: fracao };
+    }),
+  };
 }
 
 function temDia(estado: EstadoCacua, data: string) {
@@ -336,13 +366,22 @@ function produtoresDoSalvo(valor: unknown): Produtor[] | null {
     );
   };
 
+  // O preço combinado (S9.2) é opcional: o salvo de antes não tem, e um valor que não serve (0, 1.2)
+  // sai sozinho, e o produtor volta para a porcentagem padrão, sem sair da lista.
+  const comCombinadoQueServe = (produtor: Produtor) =>
+    produtor.pagoProdutor === undefined || fracaoCombinadaValida(produtor.pagoProdutor)
+      ? produtor
+      : semPrecoCombinado(produtor);
+
   // Um produtor estragado não leva os outros junto: fica de fora só ele. Com o id repetido, fica o
   // primeiro. Só volta para os 6 do dados.js se nenhum servir (revisão do S7.1).
   const ids = new Set<number>();
-  const bons = valor.filter((item): item is Produtor => {
-    if (!serve(item) || ids.has(item.id)) return false;
-    ids.add(item.id);
-    return true;
-  });
+  const bons = valor
+    .filter((item): item is Produtor => {
+      if (!serve(item) || ids.has(item.id)) return false;
+      ids.add(item.id);
+      return true;
+    })
+    .map(comCombinadoQueServe);
   return bons.length > 0 ? bons : null;
 }
