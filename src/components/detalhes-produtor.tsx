@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 import { BarraCarga } from '@/components/barra-carga';
 import { Selo } from '@/components/selo';
@@ -6,6 +7,7 @@ import type { CorDoSelo } from '@/components/selo.styles';
 import { capitalizar } from '@/utils/agenda';
 import { formatarReais } from '@/utils/calculos';
 import { textoDaPorcentagem, textoDoKm } from '@/utils/conta';
+import { nomeComArtigo } from '@/utils/novo-produtor';
 import type { AvisoDoProdutor, SituacaoDoAviso } from '@/utils/produtores';
 
 import { styles } from './detalhes-produtor.styles';
@@ -18,7 +20,7 @@ const SELO_DA_SITUACAO: Record<SituacaoDoAviso, { texto: string; cor: CorDoSelo 
 };
 
 type DetalhesProdutorProps = {
-  produtor: { sitio: string; canal: string; frutas: string[] };
+  produtor: { nome: string; sitio: string; canal: string; frutas: string[] };
   /** Do posto até o sítio, em linha reta (kmEntre, S6.3). */
   km: number;
   /** "Qui, sex e sáb", "Quinta · 20 cx de manga" ou a previsão; null se não tiver. */
@@ -33,11 +35,18 @@ type DetalhesProdutorProps = {
   total: { caixas: number; valor: number };
   /** O quanto do preço do Ceasa vai para o produtor (0.8 → "80%"). */
   pagoProdutor: number;
+  /** "Editar produtor" abre o formulário já preenchido (S9.4). */
+  onEditar: () => void;
+  /** "Sim, apagar", depois da pergunta (S9.4). */
+  onApagar: () => void;
+  /** Por que ele não pode ser apagado (motivoParaNaoApagar, S9.1), ou null: o botão fica desligado. */
+  motivoParaNaoApagar: string | null;
 };
 
 /**
  * Detalhes do produtor (S6.6), em cartões como a Conta do dia: o sítio, os avisos cumpridos e os
- * avisos na agenda, com o que o coletor paga por cada um.
+ * avisos na agenda, com o que o coletor paga por cada um. No fim, "Editar produtor" e "Apagar
+ * produtor" (S9.4).
  */
 export function DetalhesProdutor({
   produtor,
@@ -49,6 +58,9 @@ export function DetalhesProdutor({
   avisos,
   total,
   pagoProdutor,
+  onEditar,
+  onApagar,
+  motivoParaNaoApagar,
 }: DetalhesProdutorProps) {
   return (
     <>
@@ -108,7 +120,77 @@ export function DetalhesProdutor({
           </>
         )}
       </View>
+
+      <AcoesDoProdutor
+        nome={produtor.nome}
+        motivoParaNaoApagar={motivoParaNaoApagar}
+        onEditar={onEditar}
+        onApagar={onApagar}
+      />
     </>
+  );
+}
+
+type AcoesDoProdutorProps = {
+  nome: string;
+  motivoParaNaoApagar: string | null;
+  onEditar: () => void;
+  onApagar: () => void;
+};
+
+/**
+ * "Editar produtor" e "Apagar produtor" (S9.4). O apagar pergunta antes, na própria tela ("Apagar o
+ * Seu Francisco? Isso não tem volta."), porque o Alert não faz nada na web. Com aviso na agenda,
+ * ou sendo o último produtor, o botão fica desligado, com o motivo embaixo.
+ */
+function AcoesDoProdutor({ nome, motivoParaNaoApagar, onEditar, onApagar }: AcoesDoProdutorProps) {
+  const [perguntando, setPerguntando] = useState(false);
+
+  if (perguntando) {
+    return (
+      <View style={styles.cartao} accessibilityLiveRegion="polite">
+        <Text style={styles.pergunta}>Apagar {nomeComArtigo(nome)}? Isso não tem volta.</Text>
+        <View style={styles.botoes}>
+          <Botao texto="Sim, apagar" tipo="perigo" onPress={onApagar} />
+          <Botao texto="Não" tipo="contorno" onPress={() => setPerguntando(false)} />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.cartao}>
+      <View style={styles.botoes}>
+        <Botao texto="Editar produtor" tipo="contorno" onPress={onEditar} />
+        <Botao
+          texto="Apagar produtor"
+          tipo="perigoContorno"
+          desligado={motivoParaNaoApagar !== null}
+          onPress={() => setPerguntando(true)}
+        />
+      </View>
+      {motivoParaNaoApagar ? <Text style={styles.motivo}>{motivoParaNaoApagar}</Text> : null}
+    </View>
+  );
+}
+
+type BotaoProps = {
+  texto: string;
+  tipo: 'contorno' | 'perigo' | 'perigoContorno';
+  desligado?: boolean;
+  onPress: () => void;
+};
+
+function Botao({ texto, tipo, desligado, onPress }: BotaoProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: desligado }}
+      disabled={desligado}
+      onPress={onPress}
+      style={({ pressed }) => [styles.botao, styles[tipo], pressed && styles.pressionado, desligado && styles.desligado]}>
+      <Text style={[styles.botaoTexto, styles[`${tipo}Texto`]]}>{texto}</Text>
+    </Pressable>
   );
 }
 
