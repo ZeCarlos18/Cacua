@@ -67,7 +67,8 @@ export function calcularLucroDoDia(dia, precos, custos, combinados) {
       const venda = aviso.caixas * preco.preco;
       receita += venda;
       const combinado = aviso.produtor === undefined ? undefined : combinados?.[aviso.produtor];
-      pagoAvisoPorAviso += venda * (combinado ?? custos.pagoProdutor);
+      // Arredonda cada aviso nos centavos, como o avisosDoProdutor: a Conta e os detalhes batem.
+      pagoAvisoPorAviso += centavos(venda * (combinado ?? custos.pagoProdutor));
     } else if (!frutasSemPreco.includes(aviso.fruta)) {
       // Sem preço do Ceasa a fruta entra na conta valendo zero, e a tela avisa.
       frutasSemPreco.push(aviso.fruta);
