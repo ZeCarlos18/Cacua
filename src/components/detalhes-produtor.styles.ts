@@ -129,7 +129,7 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
-  botao: {
+  acao: {
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
@@ -138,34 +138,34 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  botaoTexto: {
+  acaoTexto: {
     fontSize: 15,
     fontWeight: 700,
   },
-  pressionado: {
+  acaoPressionada: {
     opacity: 0.7,
   },
-  desligado: {
+  acaoDesligada: {
     opacity: 0.4,
   },
-  contorno: {
+  acaoContorno: {
     borderColor: Cacua.verde,
     backgroundColor: Cacua.superficie,
   },
-  contornoTexto: {
+  acaoContornoTexto: {
     color: Cacua.verdeEscuro,
   },
-  perigo: {
+  acaoPerigo: {
     backgroundColor: Cacua.vermelho,
   },
-  perigoTexto: {
+  acaoPerigoTexto: {
     color: Cacua.superficie,
   },
-  perigoContorno: {
+  acaoPerigoContorno: {
     borderColor: Cacua.vermelho,
     backgroundColor: Cacua.superficie,
   },
-  perigoContornoTexto: {
+  acaoPerigoContornoTexto: {
     color: Cacua.vermelho,
   },
   pergunta: {

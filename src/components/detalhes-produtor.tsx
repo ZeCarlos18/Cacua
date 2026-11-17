@@ -151,8 +151,8 @@ function AcoesDoProdutor({ nome, motivoParaNaoApagar, onEditar, onApagar }: Acoe
       <View style={styles.cartao} accessibilityLiveRegion="polite">
         <Text style={styles.pergunta}>Apagar {nomeComArtigo(nome)}? Isso não tem volta.</Text>
         <View style={styles.botoes}>
-          <Botao texto="Sim, apagar" tipo="perigo" onPress={onApagar} />
-          <Botao texto="Não" tipo="contorno" onPress={() => setPerguntando(false)} />
+          <Botao texto="Sim, apagar" tipo="acaoPerigo" onPress={onApagar} />
+          <Botao texto="Não" tipo="acaoContorno" onPress={() => setPerguntando(false)} />
         </View>
       </View>
     );
@@ -161,10 +161,10 @@ function AcoesDoProdutor({ nome, motivoParaNaoApagar, onEditar, onApagar }: Acoe
   return (
     <View style={styles.cartao}>
       <View style={styles.botoes}>
-        <Botao texto="Editar produtor" tipo="contorno" onPress={onEditar} />
+        <Botao texto="Editar produtor" tipo="acaoContorno" onPress={onEditar} />
         <Botao
           texto="Apagar produtor"
-          tipo="perigoContorno"
+          tipo="acaoPerigoContorno"
           desligado={motivoParaNaoApagar !== null}
           onPress={() => setPerguntando(true)}
         />
@@ -176,7 +176,7 @@ function AcoesDoProdutor({ nome, motivoParaNaoApagar, onEditar, onApagar }: Acoe
 
 type BotaoProps = {
   texto: string;
-  tipo: 'contorno' | 'perigo' | 'perigoContorno';
+  tipo: 'acaoContorno' | 'acaoPerigo' | 'acaoPerigoContorno';
   desligado?: boolean;
   onPress: () => void;
 };
@@ -188,8 +188,8 @@ function Botao({ texto, tipo, desligado, onPress }: BotaoProps) {
       accessibilityState={{ disabled: desligado }}
       disabled={desligado}
       onPress={onPress}
-      style={({ pressed }) => [styles.botao, styles[tipo], pressed && styles.pressionado, desligado && styles.desligado]}>
-      <Text style={[styles.botaoTexto, styles[`${tipo}Texto`]]}>{texto}</Text>
+      style={({ pressed }) => [styles.acao, styles[tipo], pressed && styles.acaoPressionada, desligado && styles.acaoDesligada]}>
+      <Text style={[styles.acaoTexto, styles[`${tipo}Texto`]]}>{texto}</Text>
     </Pressable>
   );
 }
