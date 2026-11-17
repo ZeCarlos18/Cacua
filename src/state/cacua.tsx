@@ -7,6 +7,7 @@ import {
   comConfirmacao,
   comCustos,
   comPreco,
+  comPrecoCombinado,
   comProdutor,
   estadoInicial,
   semAviso,
@@ -24,6 +25,11 @@ import { hojeNoCelular } from '@/utils/preco-do-ceasa';
 type ValorCacua = EstadoCacua & {
   /** Cadastra o produtor novo (S7.1). Devolve os erros de cada campo, ou null se deu certo. */
   adicionarProdutor: (campos: CamposDoProdutor) => ErrosDoProdutor | null;
+  /**
+   * Combina com o produtor a porcentagem do preço do Ceasa (S9.2), ex.: (4, 0.85). `null` volta para
+   * a padrão de Custos e preços. Fração fora de 0 a 1 não muda nada.
+   */
+  combinarPreco: (id: number, fracao: number | null) => void;
   /** Coloca o aviso no dia (ex.: '30/set'). */
   adicionarAviso: (data: string, aviso: Aviso) => void;
   /**
@@ -108,6 +114,15 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
       produtoresAtuais.current = comProdutor({ ...estado, produtores: produtoresAtuais.current }, campos).produtores;
       setEstado((atual) => comProdutor(atual, campos));
       return null;
+    },
+    combinarPreco: (id, fracao) => {
+      // A lista do adicionarProdutor também fica com o combinado, para não voltar a uma lista velha.
+      produtoresAtuais.current = comPrecoCombinado(
+        { ...estado, produtores: produtoresAtuais.current },
+        id,
+        fracao,
+      ).produtores;
+      setEstado((atual) => comPrecoCombinado(atual, id, fracao));
     },
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
     mudarCaixasDoAviso: (data, posicao, caixas, esperado) =>
