@@ -1,12 +1,15 @@
-import { Text, View } from 'react-native';
+import { Pressable, Share, Text, View } from 'react-native';
 
 import { BarraCarga } from '@/components/barra-carga';
 import { Selo } from '@/components/selo';
 import type { CorDoSelo } from '@/components/selo.styles';
 import { capitalizar } from '@/utils/agenda';
+import { rotuloDoDia } from '@/utils/aviso';
 import { formatarReais } from '@/utils/calculos';
 import { textoDaPorcentagem, textoDoKm } from '@/utils/conta';
+import type { LinhaDoExtrato } from '@/utils/extrato';
 import type { AvisoDoProdutor, SituacaoDoAviso } from '@/utils/produtores';
+import { textoDasCaixas } from '@/utils/rota-do-dia';
 
 import { styles } from './detalhes-produtor.styles';
 
@@ -33,11 +36,18 @@ type DetalhesProdutorProps = {
   total: { caixas: number; valor: number };
   /** O quanto do preço do Ceasa vai para o produtor (0.8 → "80%"). */
   pagoProdutor: number;
+  /** O que ele já entregou: uma linha por coleta (extratoDoProdutor, S8.3). */
+  entregues: LinhaDoExtrato[];
+  /** As caixas e o valor de tudo o que ele entregou (totalDoExtrato, S8.3). */
+  totalEntregue: { caixas: number; valor: number };
+  /** O texto que o "Mandar extrato" compartilha (textoDoExtrato, S8.3), ou null sem coleta. */
+  extrato: string | null;
 };
 
 /**
- * Detalhes do produtor (S6.6), em cartões como a Conta do dia: o sítio, os avisos cumpridos e os
- * avisos na agenda, com o que o coletor paga por cada um.
+ * Detalhes do produtor (S6.6), em cartões como a Conta do dia: o sítio, os avisos cumpridos, os
+ * avisos na agenda, com o que o coletor paga por cada um, e o que ele já entregou, com o "Mandar
+ * extrato" (S8.6).
  */
 export function DetalhesProdutor({
   produtor,
@@ -49,6 +59,9 @@ export function DetalhesProdutor({
   avisos,
   total,
   pagoProdutor,
+  entregues,
+  totalEntregue,
+  extrato,
 }: DetalhesProdutorProps) {
   return (
     <>
@@ -108,8 +121,78 @@ export function DetalhesProdutor({
           </>
         )}
       </View>
+
+      <OQueJaEntregou entregues={entregues} total={totalEntregue} extrato={extrato} />
     </>
   );
+}
+
+type OQueJaEntregouProps = {
+  entregues: LinhaDoExtrato[];
+  total: { caixas: number; valor: number };
+  extrato: string | null;
+};
+
+/**
+ * "O que já entregou" (S8.6): uma linha por coleta, com o valor à direita ou "a combinar", o total e
+ * o "Mandar extrato", que abre o compartilhar com o texto do extrato. Sem coleta, só o aviso.
+ */
+function OQueJaEntregou({ entregues, total, extrato }: OQueJaEntregouProps) {
+  const comPreco = entregues.some((linha) => linha.valor !== null);
+
+  return (
+    <View style={styles.cartao}>
+      <Text style={styles.tituloSecao} accessibilityRole="header">
+        O que já entregou
+      </Text>
+      {entregues.length === 0 || extrato === null ? (
+        <Text style={styles.textoSecundario}>Nenhuma coleta registrada ainda.</Text>
+      ) : (
+        <>
+          {entregues.map((linha) => (
+            <View key={`${linha.data}-${linha.fruta}`} style={styles.entrega}>
+              <Text style={styles.entregaTexto}>
+                {rotuloDoDia(linha)} · {capitalizar(linha.fruta)} · {textoDasCaixas(linha.caixas)}
+              </Text>
+              <Text style={[styles.entregaValor, linha.valor === null && styles.entregaACombinar]}>
+                {linha.valor === null ? 'a combinar' : formatarReais(linha.valor)}
+              </Text>
+            </View>
+          ))}
+          <View style={styles.total}>
+            <Text style={styles.totalTexto}>
+              <Text style={styles.forte}>{textoDasCaixas(total.caixas)}</Text>
+              {comPreco ? (
+                <>
+                  {' · '}
+                  <Text style={styles.forte}>{formatarReais(total.valor)}</Text>
+                </>
+              ) : null}
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityHint="Abre o compartilhar com o extrato para mandar ao produtor"
+            onPress={() => mandarExtrato(extrato)}
+            style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
+            <Text style={styles.botaoTexto}>Mandar extrato</Text>
+          </Pressable>
+        </>
+      )}
+    </View>
+  );
+}
+
+/**
+ * Abre o compartilhar do celular com o extrato pronto; o coletor escolhe o WhatsApp e o produtor.
+ * Na web, o compartilhar pode não existir: aí nada abre, e o app continua normal (como no recibo).
+ */
+async function mandarExtrato(extrato: string) {
+  try {
+    await Share.share({ message: extrato });
+  } catch (erro) {
+    console.warn('Não deu para abrir o compartilhar:', erro);
+  }
 }
 
 /** Um aviso: dia e selo da situação, fruta, caixas e preço da caixa, e quanto o coletor paga. */

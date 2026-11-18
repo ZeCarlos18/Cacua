@@ -10,7 +10,7 @@ import { formatarReais } from '@/utils/calculos';
 import { diaComEntregas, type Entregas } from '@/utils/coleta';
 import { textoDaPorcentagem } from '@/utils/conta';
 import { dataCurta, ehDataValida } from '@/utils/preco-do-ceasa';
-import { avisosDoProdutor } from '@/utils/produtores';
+import { avisosDoProdutor, porcentagemDoProdutor } from '@/utils/produtores';
 import { textoDasCaixas } from '@/utils/rota-do-dia';
 
 /** O que o extrato usa do estado do app (useCacua()). */
@@ -49,9 +49,13 @@ function emCentavos(valor: number) {
  *
  * O valor é calculado como no recibo (S8.2): primeiro o valor da caixa, nos centavos, e depois as
  * caixas × esse valor. Assim cada linha fecha ("10 caixas × R$ 48,00 = R$ 480,00") e o extrato
- * bate com o recibo de cada coleta.
+ * bate com o recibo de cada coleta. Desde o S9.2, com a porcentagem combinada com o produtor.
  */
-export function extratoDoProdutor(produtor: { id: number }, estado: DadosDoExtrato): LinhaDoExtrato[] {
+export function extratoDoProdutor(
+  produtor: { id: number; pagoProdutor?: number },
+  estado: DadosDoExtrato,
+): LinhaDoExtrato[] {
+  const porcentagem = porcentagemDoProdutor(produtor, estado.custos);
   const agenda = estado.agenda.map((dia) => diaComEntregas(dia, estado.entregas));
   const coletados = avisosDoProdutor(produtor, { ...estado, agenda }).filter(
     (aviso) => aviso.situacao === 'coletado',
@@ -70,7 +74,7 @@ export function extratoDoProdutor(produtor: { id: number }, estado: DadosDoExtra
   return linhas.map((linha) => {
     const preco = estado.precos[linha.fruta]?.preco;
     if (preco === undefined) return linha;
-    const valorPorCaixa = emCentavos(preco * estado.custos.pagoProdutor);
+    const valorPorCaixa = emCentavos(preco * porcentagem);
     return { ...linha, valorPorCaixa, valor: emCentavos(linha.caixas * valorPorCaixa) };
   });
 }
@@ -102,9 +106,10 @@ function textoDaLinha(linha: LinhaDoExtrato) {
  * Sem a data do preço (antes do S8.1), a linha do Ceasa sai sem o "em 22/09". Fruta sem preço sai
  * com "valor a combinar" e fica fora do total em reais e da linha do Ceasa; se nenhuma fruta tem
  * preço, o total mostra só as caixas e não há linha do Ceasa. Sem nenhuma coleta, devolve null.
+ * Desde o S9.2, o "você recebe" é a porcentagem combinada com o produtor, se tiver.
  */
 export function textoDoExtrato(
-  produtor: { nome: string; sitio: string },
+  produtor: { nome: string; sitio: string; pagoProdutor?: number },
   linhas: LinhaDoExtrato[],
   coletor: { nome: string },
   custos: { pagoProdutor: number },
@@ -134,7 +139,7 @@ export function textoDoExtrato(
     ...linhas.map(textoDaLinha),
     textoDoTotal,
     ...(precosDoCeasa.length > 0
-      ? [`Ceasa: ${precosDoCeasa.join(', ')} · você recebe ${textoDaPorcentagem(custos.pagoProdutor)}`]
+      ? [`Ceasa: ${precosDoCeasa.join(', ')} · você recebe ${textoDaPorcentagem(porcentagemDoProdutor(produtor, custos))}`]
       : []),
     `Coletor: ${coletor.nome}`,
   ].join('\n');
