@@ -8,6 +8,8 @@
 import type { Href } from 'expo-router';
 
 import type { Aviso } from '@/utils/agenda';
+import { textoDaPorcentagem } from '@/utils/conta';
+import { lerCampo } from '@/utils/custos';
 
 type Produtor = { id: number; previsao?: string };
 type DiaDaAgenda = { dia: string; avisos: Aviso[] };
@@ -30,6 +32,36 @@ export function porcentagemDoProdutor(
 ) {
   const combinado = produtor?.pagoProdutor;
   return fracaoCombinadaValida(combinado) ? combinado : custos.pagoProdutor;
+}
+
+/**
+ * O que foi digitado em "Mudar" nos detalhes do produtor (S9.5), no valor do estado: "85" → 0.85.
+ * Devolve null quando não serve: vazio, 0, mais de 100 ou o que não é número.
+ */
+export function lerPorcentagemCombinada(texto: string) {
+  const fracao = lerCampo(texto, 'porcentagem');
+  return fracaoCombinadaValida(fracao) ? fracao : null;
+}
+
+/**
+ * A linha dos detalhes do produtor (S9.5): "Você paga 80% do preço do Ceasa (o padrão)" ou, com
+ * preço combinado, "Você paga 85% do preço do Ceasa (combinado)".
+ */
+export function textoDoPrecoDoProdutor(
+  produtor: { pagoProdutor?: number } | undefined,
+  custos: { pagoProdutor: number },
+) {
+  const combinado = fracaoCombinadaValida(produtor?.pagoProdutor);
+  const porcentagem = textoDaPorcentagem(porcentagemDoProdutor(produtor, custos));
+  return `Você paga ${porcentagem} do preço do Ceasa (${combinado ? 'combinado' : 'o padrão'})`;
+}
+
+/**
+ * Se algum aviso do dia é de um produtor com preço combinado (S9.5). Na Conta do dia, aí a linha
+ * "Pago aos produtores" deixa de mostrar uma porcentagem só.
+ */
+export function diaTemCombinado(dia: { avisos: { produtor: number }[] }, combinados: Record<number, number>) {
+  return dia.avisos.some((aviso) => combinados[aviso.produtor] !== undefined);
 }
 
 /**

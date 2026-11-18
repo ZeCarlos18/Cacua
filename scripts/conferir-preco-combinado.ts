@@ -12,7 +12,16 @@ import {
 } from '@/state/estado';
 import { calcularLucroDoDia, formatarReais } from '@/utils/calculos';
 import { extratoDoProdutor, textoDoExtrato } from '@/utils/extrato';
-import { avisosDoProdutor, combinadosDos, porcentagemDoProdutor, totalDosAvisos } from '@/utils/produtores';
+import { resumoDaSemana, resumoDoDia } from '@/utils/inicio';
+import {
+  avisosDoProdutor,
+  combinadosDos,
+  diaTemCombinado,
+  lerPorcentagemCombinada,
+  porcentagemDoProdutor,
+  textoDoPrecoDoProdutor,
+  totalDosAvisos,
+} from '@/utils/produtores';
 import { itensDoRecibo, textoDoRecibo } from '@/utils/recibo';
 import { diaComKm } from '@/utils/rota';
 
@@ -159,6 +168,58 @@ conferir(
   estragado !== null &&
     estragado.produtores.length === 6 &&
     porcentagemDoProdutor(produtor(estragado, LUCIA), estragado.custos) === 0.8,
+);
+
+// As telas do S9.5: a linha dos detalhes, o campo "Mudar", a Conta do dia e o Início
+conferir(
+  'Detalhes, sem combinado: "Você paga 80% do preço do Ceasa (o padrão)"',
+  textoDoPrecoDoProdutor(produtor(inicio, LUCIA), inicio.custos) === 'Você paga 80% do preço do Ceasa (o padrão)',
+);
+conferir(
+  'Detalhes, combinado: "Você paga 85% do preço do Ceasa (combinado)"',
+  textoDoPrecoDoProdutor(produtor(lucia, LUCIA), lucia.custos) === 'Você paga 85% do preço do Ceasa (combinado)',
+);
+conferir(
+  'Detalhes, padrão em 75%: "Você paga 75% do preço do Ceasa (o padrão)" para quem não combinou',
+  textoDoPrecoDoProdutor(produtor(padrao75, ANTONIO), padrao75.custos) === 'Você paga 75% do preço do Ceasa (o padrão)',
+);
+
+conferir('Campo "85" → 0.85', lerPorcentagemCombinada('85') === 0.85);
+conferir('Campo "100" → 1 (vale)', lerPorcentagemCombinada('100') === 1);
+conferir('Campo "7,5" → 0.075', lerPorcentagemCombinada('7,5') === 0.075);
+conferir(
+  'Campo "0", "101", "-5", "abc" e vazio não valem (null)',
+  ['0', '101', '-5', 'abc', '', '  '].every((texto) => lerPorcentagemCombinada(texto) === null),
+);
+
+const combinadosDaLucia = combinadosDos(lucia.produtores);
+conferir('Dia com a Dona Lúcia (quinta): tem combinado', diaTemCombinado(doDia(lucia, '01/out'), combinadosDaLucia));
+conferir('Dia sem ela (sexta): não tem combinado', !diaTemCombinado(doDia(lucia, '02/out'), combinadosDaLucia));
+conferir('Sem combinados, nenhum dia tem', inicio.agenda.every((dia) => !diaTemCombinado(dia, {})));
+
+// O Início usa o combinado: a quinta e a semana
+const dadosDoInicio = (estado: EstadoCacua) => ({ ...estado, posto });
+conferir(
+  'Início, Dona Lúcia com 0.85: quinta R$ 387,36',
+  formatarReais(resumoDoDia(doDia(lucia, '01/out'), dadosDoInicio(lucia)).conta.lucro) === 'R$ 387,36',
+);
+conferir(
+  'Início, Dona Lúcia com 0.85: semana R$ 498,82',
+  formatarReais(resumoDaSemana(lucia.agenda, dadosDoInicio(lucia)).lucro) === 'R$ 498,82',
+);
+conferir(
+  'Início, sem combinado: quinta R$ 484,86 e semana R$ 616,32',
+  formatarReais(resumoDoDia(doDia(inicio, '01/out'), dadosDoInicio(inicio)).conta.lucro) === 'R$ 484,86' &&
+    formatarReais(resumoDaSemana(inicio.agenda, dadosDoInicio(inicio)).lucro) === 'R$ 616,32',
+);
+conferir(
+  'Início e Agenda dão o mesmo número com o combinado (quinta e semana)',
+  resumoDoDia(doDia(lucia, '01/out'), dadosDoInicio(lucia)).conta.lucro === conta(lucia, '01/out').lucro &&
+    resumoDaSemana(lucia.agenda, dadosDoInicio(lucia)).lucro === semana(lucia),
+);
+conferir(
+  'Voltar ao padrão: o Início volta para a quinta R$ 484,86',
+  formatarReais(resumoDoDia(doDia(deVolta, '01/out'), dadosDoInicio(deVolta)).conta.lucro) === 'R$ 484,86',
 );
 
 if (falhas > 0) {

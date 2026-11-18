@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Pressable, Share, Text, View } from 'react-native';
 
 import { BarraCarga } from '@/components/barra-carga';
+import { MudarPrecoCombinado } from '@/components/mudar-preco-combinado';
 import { Selo } from '@/components/selo';
 import type { CorDoSelo } from '@/components/selo.styles';
 import { capitalizar } from '@/utils/agenda';
@@ -34,8 +36,14 @@ type DetalhesProdutorProps = {
   taxa: number | null;
   avisos: AvisoDoProdutor[];
   total: { caixas: number; valor: number };
-  /** O quanto do preço do Ceasa vai para o produtor (0.8 → "80%"). */
+  /** O quanto do preço do Ceasa vai para o produtor (0.8 → "80%"): a combinada com ele, ou a padrão. */
   pagoProdutor: number;
+  /** "Você paga 80% do preço do Ceasa (o padrão)" ou "… (combinado)" (textoDoPrecoDoProdutor, S9.5). */
+  precoDoProdutor: string;
+  /** Se ele tem preço combinado: só aí o "Voltar ao padrão" aparece. */
+  combinado: boolean;
+  /** Combina a porcentagem (0.85) ou volta para a padrão (null), pelo "Mudar" (S9.5). */
+  onCombinar: (fracao: number | null) => void;
   /** O que ele já entregou: uma linha por coleta (extratoDoProdutor, S8.3). */
   entregues: LinhaDoExtrato[];
   /** As caixas e o valor de tudo o que ele entregou (totalDoExtrato, S8.3). */
@@ -59,10 +67,16 @@ export function DetalhesProdutor({
   avisos,
   total,
   pagoProdutor,
+  precoDoProdutor,
+  combinado,
+  onCombinar,
   entregues,
   totalEntregue,
   extrato,
 }: DetalhesProdutorProps) {
+  // O "Mudar" da porcentagem aberto, na mesma linha do "Você paga…" (S9.5).
+  const [mudandoPreco, setMudandoPreco] = useState(false);
+
   return (
     <>
       <View style={styles.cartao}>
@@ -80,6 +94,28 @@ export function DetalhesProdutor({
         <View style={styles.dica}>
           <Text style={styles.dicaTexto}>{comoAvisa}</Text>
         </View>
+        {mudandoPreco ? (
+          <MudarPrecoCombinado
+            fracao={pagoProdutor}
+            combinado={combinado}
+            onSalvar={(fracao) => {
+              onCombinar(fracao);
+              setMudandoPreco(false);
+            }}
+            onCancelar={() => setMudandoPreco(false)}
+          />
+        ) : (
+          <View style={styles.precoDoProdutor}>
+            <Text style={styles.precoTexto}>{precoDoProdutor}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Mudar a porcentagem do preço do Ceasa"
+              onPress={() => setMudandoPreco(true)}
+              style={({ pressed }) => [styles.precoMudar, pressed && styles.precoMudarPressionado]}>
+              <Text style={styles.precoMudarTexto}>Mudar</Text>
+            </Pressable>
+          </View>
+        )}
       </View>
 
       <View style={styles.cartao}>

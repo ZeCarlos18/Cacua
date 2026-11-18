@@ -11,6 +11,7 @@ import { areaDoMapa } from '@/utils/mapa-rota';
 import { idDoDia } from '@/utils/agenda';
 import { rotuloDoDia } from '@/utils/aviso';
 import { diaComEntregas } from '@/utils/coleta';
+import { combinadosDos } from '@/utils/produtores';
 import { diaPeloId } from '@/utils/conta';
 import { montarRota } from '@/utils/rota';
 import { nomesDosProdutores, subtituloDaRota } from '@/utils/rota-do-dia';
@@ -65,6 +66,8 @@ export default function RotaScreen() {
   // As caixas que vieram valem na rota, na conta, no mapa e no recibo (S7.6).
   const diaQueVeio = diaComEntregas(dia, entregas);
   const { paradas, km, semPosicao } = montarRota(diaQueVeio, produtores, posto);
+  // Cada produtor com a porcentagem dele, a combinada ou a padrão: na conta e no recibo (S9.5).
+  const combinados = combinadosDos(produtores);
 
   return (
     <Tela titulo="Rota do dia" descricao={descricao}>
@@ -76,9 +79,10 @@ export default function RotaScreen() {
           entregas={entregas}
           precos={precos}
           custos={custos}
+          combinados={combinados}
           paradas={paradas}
           km={km}
-          conta={calcularLucroDoDia({ ...diaQueVeio, km }, precos, custos)}
+          conta={calcularLucroDoDia({ ...diaQueVeio, km }, precos, custos, combinados)}
           coletados={coletas[dia.data] ?? []}
           semPosicao={nomesDosProdutores(semPosicao, produtores)}
           posto={posto}

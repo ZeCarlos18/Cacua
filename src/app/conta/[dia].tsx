@@ -6,6 +6,7 @@ import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia, formatarReais } from '@/utils/calculos';
 import { diaComEntregas } from '@/utils/coleta';
 import { diaPeloId, tituloDaConta } from '@/utils/conta';
+import { combinadosDos } from '@/utils/produtores';
 import { itensDoRecibo, valorDoAviso } from '@/utils/recibo';
 import { diaComKm } from '@/utils/rota';
 
@@ -44,12 +45,14 @@ export default function ContaScreen() {
   // As caixas que vieram na coleta valem na conta do dia (S7.6).
   const diaDaRota = diaComKm(diaComEntregas(dia, entregas), produtores, posto);
   const coletados = coletas[dia.data] ?? [];
+  // Cada produtor com a porcentagem dele, a combinada ou a padrão (S9.5).
+  const combinados = combinadosDos(produtores);
 
   // O valor de cada aviso coletado (S8.5), pela mesma conta do recibo (itensDoRecibo): "R$ 480,00",
   // ou "a combinar" para fruta sem preço do Ceasa. Aviso ainda não coletado fica sem valor (null).
   const valores = diaDaRota.avisos.map((aviso) => {
     if (!coletados.includes(aviso.produtor)) return null;
-    const itens = itensDoRecibo(dia, aviso.produtor, entregas, precos, custos);
+    const itens = itensDoRecibo(dia, aviso.produtor, entregas, precos, custos, combinados);
     const valor = valorDoAviso(itens, aviso.fruta, aviso.caixas);
     return valor === null ? 'a combinar' : formatarReais(valor);
   });
@@ -59,8 +62,9 @@ export default function ContaScreen() {
       <Stack.Screen options={{ title: tituloDaConta(dia.dia) }} />
       <ContaDoDia
         dia={diaDaRota}
-        conta={calcularLucroDoDia(diaDaRota, precos, custos)}
+        conta={calcularLucroDoDia(diaDaRota, precos, custos, combinados)}
         custos={custos}
+        combinados={combinados}
         produtores={produtores}
         cargaMinima={coletor.cargaMinima}
         confirmado={confirmados.includes(dia.data)}

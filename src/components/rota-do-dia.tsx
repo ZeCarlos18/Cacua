@@ -28,6 +28,8 @@ type RotaDoDiaProps = {
   precos: Parameters<typeof itensDoRecibo>[3];
   /** Os custos do coletor: o recibo mostra a porcentagem que o produtor recebe (pagoProdutor). */
   custos: Parameters<typeof itensDoRecibo>[4];
+  /** A porcentagem combinada de cada produtor (combinadosDos, S9.2): o recibo usa a de cada um (S9.5). */
+  combinados: Record<number, number>;
   /** As paradas na ordem da montarRota, já com as caixas que vieram (diaComEntregas, S7.3). */
   paradas: ParadaDaRota[];
   km: number;
@@ -59,6 +61,7 @@ export function RotaDoDia({
   entregas,
   precos,
   custos,
+  combinados,
   paradas,
   km,
   conta,
@@ -103,7 +106,14 @@ export function RotaDoDia({
           // Calculado só aqui, para a parada mostrar o "(avisou 12)".
           const totalAvisado = Object.values(avisadas).reduce((soma, quantas) => soma + quantas, 0);
           // O recibo com o valor em reais e o preço do Ceasa (S8.2); a parada mostra o mesmo valor (S8.5).
-          const itens = itensDoRecibo({ data: dia.data, avisos: avisados }, parada.id, entregas, precos, custos);
+          const itens = itensDoRecibo(
+            { data: dia.data, avisos: avisados },
+            parada.id,
+            entregas,
+            precos,
+            custos,
+            combinados,
+          );
           return (
             // O dia entra na chave: ao trocar de dia, a parada do mesmo produtor começa do zero, e o
             // "Quantas caixas vieram?" aberto no outro dia fecha (revisão do S7.6).

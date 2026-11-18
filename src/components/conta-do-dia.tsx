@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/theme';
 import type { agenda, custos as custosDoColetor } from '@/data/dados';
 import type { Produtor } from '@/state/estado';
 import { custoPorCaixa, quemAvisou, textoDaPorcentagem, textoDoKm } from '@/utils/conta';
+import { diaTemCombinado } from '@/utils/produtores';
 import { formatarReais, type calcularLucroDoDia } from '@/utils/calculos';
 
 import { styles } from './conta-do-dia.styles';
@@ -20,6 +21,8 @@ type ContaDoDiaProps = {
   dia: (typeof agenda)[number] & { km: number };
   conta: ReturnType<typeof calcularLucroDoDia>;
   custos: typeof custosDoColetor;
+  /** A porcentagem combinada de cada produtor (combinadosDos, S9.2): `{ 4: 0.85 }`. */
+  combinados: Record<number, number>;
   /** Os produtores do estado (S7.1), para o "Quem avisou". */
   produtores: Produtor[];
   cargaMinima: number;
@@ -46,6 +49,7 @@ export function ContaDoDia({
   dia,
   conta,
   custos,
+  combinados,
   produtores,
   cargaMinima,
   confirmado,
@@ -100,8 +104,13 @@ export function ContaDoDia({
 
           <View>
             <Linha rotulo="Venda no Ceasa" valor={conta.receita} />
+            {/* Com algum preço combinado no dia, não há uma porcentagem só: ela aparece em cada produtor (S9.5). */}
             <Linha
-              rotulo={`Pago aos produtores (${textoDaPorcentagem(custos.pagoProdutor)})`}
+              rotulo={
+                diaTemCombinado(dia, combinados)
+                  ? 'Pago aos produtores'
+                  : `Pago aos produtores (${textoDaPorcentagem(custos.pagoProdutor)})`
+              }
               valor={-conta.pagoProdutor}
             />
             <Linha rotulo={`Perda estimada (${textoDaPorcentagem(custos.perda)})`} valor={-conta.perda} />
@@ -141,7 +150,16 @@ export function ContaDoDia({
             return (
               <View key={aviso.chave} style={styles.produtor}>
                 <View style={styles.produtorTopo}>
-                  <Text style={styles.produtorNome}>{aviso.nome}</Text>
+                  <Text style={styles.produtorNome}>
+                    {aviso.nome}
+                    {/* A porcentagem combinada com ele, ao lado do nome (S9.5). */}
+                    {combinados[dia.avisos[posicao].produtor] !== undefined ? (
+                      <Text style={styles.produtorPorcentagem}>
+                        {' · '}
+                        {textoDaPorcentagem(combinados[dia.avisos[posicao].produtor])}
+                      </Text>
+                    ) : null}
+                  </Text>
                   <View style={styles.produtorQuanto}>
                     <Text style={styles.produtorCaixas}>
                       {aviso.fruta} · {aviso.caixas} caixas
