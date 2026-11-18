@@ -93,6 +93,13 @@ export function PainelInicio({ hoje, saida, semana, paraConfirmar, semanaFraca, 
           style={({ pressed }) => [styles.botaoContorno, pressed && styles.botaoContornoPressionado]}>
           <Text style={styles.botaoContornoTexto}>Custos e preços</Text>
         </Pressable>
+        {/* O backup dos dados (S9.6): mandar para o próprio WhatsApp e restaurar. */}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/backup')}
+          style={({ pressed }) => [styles.botaoContorno, pressed && styles.botaoContornoPressionado]}>
+          <Text style={styles.botaoContornoTexto}>Backup dos dados</Text>
+        </Pressable>
         <BotaoConvidar />
       </View>
     </>
