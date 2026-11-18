@@ -112,6 +112,50 @@ export const styles = StyleSheet.create({
     lineHeight: 21,
     color: Cacua.textoSecundario,
   },
+  // "O que já entregou" (S8.6): a coleta à esquerda e o valor à direita, como as linhas da Conta.
+  entrega: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.three,
+    paddingTop: Spacing.two,
+    borderTopWidth: 1,
+    borderTopColor: Cacua.borda,
+  },
+  entregaTexto: {
+    flexShrink: 1,
+    fontSize: 15,
+    lineHeight: 21,
+    color: Cacua.texto,
+  },
+  entregaValor: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: 700,
+    color: Cacua.texto,
+    fontVariant: ['tabular-nums'],
+  },
+  entregaACombinar: {
+    fontWeight: 400,
+    color: Cacua.textoSecundario,
+  },
+  botao: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: Spacing.two + Spacing.one,
+    borderWidth: 1.5,
+    borderColor: Cacua.verde,
+    backgroundColor: Cacua.superficie,
+  },
+  botaoPressionado: {
+    backgroundColor: Cacua.verdeClaro,
+  },
+  botaoTexto: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
+  },
   vazio: {
     flex: 1,
     alignItems: 'center',

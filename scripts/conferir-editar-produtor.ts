@@ -193,7 +193,7 @@ const comRestos: EstadoCacua = {
 const semRestos = semProdutor(comRestos, francisco.id);
 conferir(
   'Apagar tira o id das coletas, sem mexer no 21',
-  semRestos.coletas['01/out'].join() === '3,21' && semRestos.coletas['02/out'].length === 0,
+  semRestos.coletas['01/out'].join() === '3,21' && semRestos.coletas['02/out'] === undefined,
 );
 conferir(
   'Apagar tira as entregas dele, sem mexer nas do 21, e o dia que fica vazio sai',

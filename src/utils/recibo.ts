@@ -10,6 +10,7 @@ import { formatarReais } from '@/utils/calculos';
 import { caixasAvisadas, diaComEntregas, type Entregas } from '@/utils/coleta';
 import { textoDaPorcentagem } from '@/utils/conta';
 import { dataCurta, ehDataValida } from '@/utils/preco-do-ceasa';
+import { porcentagemDoProdutor } from '@/utils/produtores';
 import { textoDasCaixas } from '@/utils/rota-do-dia';
 
 type DiaDoRecibo = { dia: string; data: string };
@@ -32,6 +33,8 @@ export type ItemDoRecibo = {
   preco?: number;
   /** O dia do preço do Ceasa ('AAAA-MM-DD'), se tiver. */
   data?: string;
+  /** A porcentagem do preço do Ceasa que vai para ele: a combinada (S9.2) ou a padrão (0,8). */
+  porcentagem?: number;
   /** O que o produtor recebe por caixa: o preço do Ceasa × a porcentagem dele, nos centavos. */
   valorPorCaixa?: number;
   /** O que o produtor recebe pela fruta: as caixas que vieram × o valor da caixa, nos centavos. */
@@ -47,7 +50,8 @@ function emCentavos(valor: number) {
  * vieram (diaComEntregas) e as avisadas (caixasAvisadas). A mesma fruta avisada duas vezes junta
  * numa linha só. Fruta sem preço do Ceasa (como o coco) fica sem valor.
  *
- * `dia` é o dia da agenda, com as caixas avisadas, e `produtor` é o id dele.
+ * `dia` é o dia da agenda, com as caixas avisadas, e `produtor` é o id dele. Desde o S9.2, com os
+ * `combinados` (combinadosDos), o produtor com preço combinado recebe a porcentagem dele.
  */
 export function itensDoRecibo(
   dia: { data: string; avisos: Aviso[] },
@@ -55,7 +59,9 @@ export function itensDoRecibo(
   entregas: Entregas,
   precos: PrecosDoRecibo,
   custos: CustosDoRecibo,
+  combinados?: Record<number, number>,
 ): ItemDoRecibo[] {
+  const porcentagem = porcentagemDoProdutor({ pagoProdutor: combinados?.[produtor] }, custos);
   const avisadas = caixasAvisadas(dia, produtor);
   const vieram = new Map<string, number>();
   for (const aviso of diaComEntregas(dia, entregas).avisos) {
@@ -68,11 +74,12 @@ export function itensDoRecibo(
     const doCeasa = precos[fruta];
     if (!doCeasa) return item;
 
-    const valorPorCaixa = emCentavos(doCeasa.preco * custos.pagoProdutor);
+    const valorPorCaixa = emCentavos(doCeasa.preco * porcentagem);
     return {
       ...item,
       preco: doCeasa.preco,
       data: doCeasa.data,
+      porcentagem,
       valorPorCaixa,
       valor: emCentavos(caixas * valorPorCaixa),
     };
@@ -99,7 +106,8 @@ function linhasDaFruta(item: ItemDoRecibo, custos: CustosDoRecibo) {
   return [
     caixas,
     `${formatarReais(item.valorPorCaixa)} a caixa = ${formatarReais(item.valor)}`,
-    `Ceasa: ${formatarReais(item.preco)} a caixa${quando} · você recebe ${textoDaPorcentagem(custos.pagoProdutor)}`,
+    // A porcentagem do produtor (S9.2): "você recebe 85%" para quem tem preço combinado.
+    `Ceasa: ${formatarReais(item.preco)} a caixa${quando} · você recebe ${textoDaPorcentagem(item.porcentagem ?? custos.pagoProdutor)}`,
   ];
 }
 

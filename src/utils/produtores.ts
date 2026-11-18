@@ -12,6 +12,39 @@ import type { Aviso } from '@/utils/agenda';
 type Produtor = { id: number; previsao?: string };
 type DiaDaAgenda = { dia: string; avisos: Aviso[] };
 
+/**
+ * O preço combinado com o produtor (S9.2): a fração do preço do Ceasa que vai para ele, maior que 0
+ * e até 1 (100%). 0,85 vale; 0, 1,2 e NaN não valem.
+ */
+export function fracaoCombinadaValida(fracao: unknown): fracao is number {
+  return typeof fracao === 'number' && Number.isFinite(fracao) && fracao > 0 && fracao <= 1;
+}
+
+/**
+ * A porcentagem do preço do Ceasa que vai para o produtor (S9.2): a combinada com ele, ou a padrão
+ * de Custos e preços. Dona Lúcia com 0,85 → 0,85; o Seu Antônio, sem combinado → 0,8.
+ */
+export function porcentagemDoProdutor(
+  produtor: { pagoProdutor?: number } | undefined,
+  custos: { pagoProdutor: number },
+) {
+  const combinado = produtor?.pagoProdutor;
+  return fracaoCombinadaValida(combinado) ? combinado : custos.pagoProdutor;
+}
+
+/**
+ * Quem tem preço combinado (S9.2), como `{ [id]: fração }`, para as telas passarem ao
+ * calcularLucroDoDia e ao itensDoRecibo. Dona Lúcia com 0,85 → { 4: 0.85 }.
+ */
+export function combinadosDos(produtores: { id: number; pagoProdutor?: number }[]): Record<number, number> {
+  const combinados: Record<number, number> = {};
+  for (const produtor of produtores) {
+    const combinado = produtor.pagoProdutor;
+    if (fracaoCombinadaValida(combinado)) combinados[produtor.id] = combinado;
+  }
+  return combinados;
+}
+
 /** "Qui, sex e sáb": os itens separados por vírgula, com "e" antes do último. */
 function juntarComE(itens: string[]) {
   if (itens.length <= 1) return itens.join('');
@@ -88,7 +121,10 @@ export type AvisoDoProdutor = {
   caixas: number;
   /** O preço da caixa no Ceasa, ou null se a fruta não tem preço (como o coco). */
   precoDaCaixa: number | null;
-  /** O que o coletor paga ao produtor: caixas × preço × pagoProdutor (80%). Null sem preço. */
+  /**
+   * O que o coletor paga ao produtor: caixas × preço × a porcentagem dele (80%, ou a combinada,
+   * S9.2). Null sem preço.
+   */
   valor: number | null;
   situacao: SituacaoDoAviso;
 };
@@ -108,13 +144,13 @@ export type DadosDosAvisos = {
 /**
  * Cada aviso do produtor na agenda da semana (S6.3), na ordem dos dias, com o preço da caixa, o
  * valor que o coletor paga e a situação. Seu Antônio, goiaba 12 cx na quinta: 12 × R$ 60 × 80% =
- * R$ 576,00.
+ * R$ 576,00. Desde o S9.2, com a porcentagem combinada com ele, se tiver (Dona Lúcia com 85%).
  */
 export function avisosDoProdutor(
-  produtor: { id: number },
+  produtor: { id: number; pagoProdutor?: number },
   { agenda, precos, custos, coletas, confirmados }: DadosDosAvisos,
 ): AvisoDoProdutor[] {
-  const { pagoProdutor } = custos;
+  const pagoProdutor = porcentagemDoProdutor(produtor, custos);
   return agenda.flatMap((dia) =>
     dia.avisos
       .filter((aviso) => aviso.produtor === produtor.id)

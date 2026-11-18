@@ -7,6 +7,7 @@ import {
   comConfirmacao,
   comCustos,
   comPreco,
+  comPrecoCombinado,
   comProdutor,
   comProdutorEditado,
   estadoInicial,
@@ -33,6 +34,11 @@ type ValorCacua = EstadoCacua & {
   editarProdutor: (id: number, campos: CamposDoProdutor) => ErrosDoProdutor | null;
   /** Apaga o produtor (S9.1). Com aviso na agenda, ou sendo o último, nada muda (motivoParaNaoApagar). */
   apagarProdutor: (id: number) => void;
+  /**
+   * Combina com o produtor a porcentagem do preço do Ceasa (S9.2), ex.: (4, 0.85). `null` volta para
+   * a padrão de Custos e preços. Fração fora de 0 a 1 não muda nada.
+   */
+  combinarPreco: (id: number, fracao: number | null) => void;
   /** Coloca o aviso no dia (ex.: '30/set'). */
   adicionarAviso: (data: string, aviso: Aviso) => void;
   /**
@@ -133,6 +139,15 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
     apagarProdutor: (id) => {
       produtoresAtuais.current = semProdutor({ ...estado, produtores: produtoresAtuais.current }, id).produtores;
       setEstado((atual) => semProdutor(atual, id));
+    },
+    combinarPreco: (id, fracao) => {
+      // A lista do adicionarProdutor também fica com o combinado, para não voltar a uma lista velha.
+      produtoresAtuais.current = comPrecoCombinado(
+        { ...estado, produtores: produtoresAtuais.current },
+        id,
+        fracao,
+      ).produtores;
+      setEstado((atual) => comPrecoCombinado(atual, id, fracao));
     },
     adicionarAviso: (data, aviso) => setEstado((atual) => comAviso(atual, data, aviso)),
     mudarCaixasDoAviso: (data, posicao, caixas, esperado) =>
