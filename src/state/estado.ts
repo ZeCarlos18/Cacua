@@ -8,7 +8,13 @@ import { agenda, custos, precos, produtores, rota } from '@/data/dados';
 import type { Aviso } from '@/utils/agenda';
 import { caixasValem, motivoParaNaoMudar } from '@/utils/aviso';
 import { chaveDaEntrega, type CaixasPorFruta, type Entregas } from '@/utils/coleta';
-import { errosDoProdutor, novoProdutor, type CamposDoProdutor } from '@/utils/novo-produtor';
+import {
+  errosDoProdutor,
+  motivoParaNaoApagar,
+  novoProdutor,
+  produtorEditado,
+  type CamposDoProdutor,
+} from '@/utils/novo-produtor';
 import { ehDataValida } from '@/utils/preco-do-ceasa';
 import { fracaoCombinadaValida } from '@/utils/produtores';
 import type { Posicao } from '@/utils/rota';
@@ -76,6 +82,50 @@ export function comProdutor(estado: EstadoCacua, campos: CamposDoProdutor): Esta
   if (errosDoProdutor(campos, estado.produtores)) return estado;
   const id = Math.max(0, ...estado.produtores.map((produtor) => produtor.id)) + 1;
   return { ...estado, produtores: [...estado.produtores, novoProdutor(campos, id)] };
+}
+
+/**
+ * Troca nome, sítio, frutas, canal e lugar do produtor (S9.1). Mantém o id, os avisos cumpridos, a
+ * previsão, o preço combinado e a fruta sem preço do Ceasa que ele já tinha (produtorEditado). Com
+ * erro nos campos (errosDoProdutor, em que o próprio produtor não conta como repetido), ou com um
+ * produtor que não existe, nada muda.
+ */
+export function comProdutorEditado(estado: EstadoCacua, id: number, campos: CamposDoProdutor): EstadoCacua {
+  if (!estado.produtores.some((produtor) => produtor.id === id)) return estado;
+  if (errosDoProdutor(campos, estado.produtores, id)) return estado;
+  return {
+    ...estado,
+    produtores: estado.produtores.map((produtor) => (produtor.id === id ? produtorEditado(produtor, campos) : produtor)),
+  };
+}
+
+/**
+ * Tira o produtor da lista (S9.1) e os restos dele nas coletas e nas entregas, para o id, que o
+ * próximo produtor novo pode reaproveitar, não herdar nada. Com motivo para não apagar (aviso na
+ * agenda ou o último produtor), nada muda.
+ */
+export function semProdutor(estado: EstadoCacua, id: number): EstadoCacua {
+  if (motivoParaNaoApagar(estado, id)) return estado;
+
+  // "2:" pega "2:goiaba" e "2:manga", mas não "21:goiaba".
+  const doProdutor = chaveDaEntrega(id, '');
+  const entregas: EstadoCacua['entregas'] = {};
+  for (const [data, doDia] of Object.entries(estado.entregas)) {
+    const restantes = Object.entries(doDia).filter(([chave]) => !chave.startsWith(doProdutor));
+    if (restantes.length > 0) entregas[data] = Object.fromEntries(restantes);
+  }
+
+  return {
+    ...estado,
+    produtores: estado.produtores.filter((produtor) => produtor.id !== id),
+    // Um dia que fica sem nenhum produtor coletado sai, como as entregas (revisão do Teogenes).
+    coletas: Object.fromEntries(
+      Object.entries(estado.coletas)
+        .map(([data, ids]) => [data, ids.filter((coletado) => coletado !== id)] as const)
+        .filter(([, ids]) => ids.length > 0),
+    ),
+    entregas,
+  };
 }
 
 /** O produtor sem o preço combinado: volta a valer a porcentagem padrão de Custos e preços. */

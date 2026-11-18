@@ -9,10 +9,12 @@ import {
   comPreco,
   comPrecoCombinado,
   comProdutor,
+  comProdutorEditado,
   estadoInicial,
   semAviso,
   semColeta,
   semConfirmacao,
+  semProdutor,
   type Custos,
   type EstadoCacua,
 } from '@/state/estado';
@@ -25,6 +27,13 @@ import { hojeNoCelular } from '@/utils/preco-do-ceasa';
 type ValorCacua = EstadoCacua & {
   /** Cadastra o produtor novo (S7.1). Devolve os erros de cada campo, ou null se deu certo. */
   adicionarProdutor: (campos: CamposDoProdutor) => ErrosDoProdutor | null;
+  /**
+   * Corrige o produtor (S9.1): nome, sítio, frutas, canal e lugar no mapa. Devolve os erros de cada
+   * campo, ou null se deu certo. Mantém o id, os avisos cumpridos, a previsão e o preço combinado.
+   */
+  editarProdutor: (id: number, campos: CamposDoProdutor) => ErrosDoProdutor | null;
+  /** Apaga o produtor (S9.1). Com aviso na agenda, ou sendo o último, nada muda (motivoParaNaoApagar). */
+  apagarProdutor: (id: number) => void;
   /**
    * Combina com o produtor a porcentagem do preço do Ceasa (S9.2), ex.: (4, 0.85). `null` volta para
    * a padrão de Custos e preços. Fração fora de 0 a 1 não muda nada.
@@ -78,8 +87,9 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
   // O estado do dados.js não vai para o celular: nem ao abrir sem nada salvo, nem depois do
   // restaurarPadrao, que apaga o salvo.
   const naoSalvar = useRef(estado);
-  // O adicionarProdutor confere o repetido na hora, então lê a lista mais nova por aqui (como o
-  // cadastrar do S6.1): num toque duplo no "Salvar produtor", o segundo já vê o produtor novo.
+  // O adicionarProdutor e o editarProdutor conferem o repetido na hora, então leem a lista mais nova
+  // por aqui (como o cadastrar do S6.1): num toque duplo no "Salvar produtor", o segundo já vê o
+  // produtor novo (ou editado, ou o apagado já fora da lista).
   const produtoresAtuais = useRef(estado.produtores);
 
   useEffect(() => {
@@ -114,6 +124,21 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
       produtoresAtuais.current = comProdutor({ ...estado, produtores: produtoresAtuais.current }, campos).produtores;
       setEstado((atual) => comProdutor(atual, campos));
       return null;
+    },
+    editarProdutor: (id, campos) => {
+      // Um produtor que não existe (o endereço com id 99) não tem o que editar.
+      if (!produtoresAtuais.current.some((produtor) => produtor.id === id)) {
+        return { nome: 'Esse produtor não está na lista.' };
+      }
+      const erros = errosDoProdutor(campos, produtoresAtuais.current, id);
+      if (erros) return erros;
+      produtoresAtuais.current = comProdutorEditado({ ...estado, produtores: produtoresAtuais.current }, id, campos).produtores;
+      setEstado((atual) => comProdutorEditado(atual, id, campos));
+      return null;
+    },
+    apagarProdutor: (id) => {
+      produtoresAtuais.current = semProdutor({ ...estado, produtores: produtoresAtuais.current }, id).produtores;
+      setEstado((atual) => semProdutor(atual, id));
     },
     combinarPreco: (id, fracao) => {
       // A lista do adicionarProdutor também fica com o combinado, para não voltar a uma lista velha.
