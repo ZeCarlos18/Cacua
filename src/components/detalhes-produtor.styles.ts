@@ -167,4 +167,59 @@ export const styles = StyleSheet.create({
     lineHeight: 22,
     color: Cacua.textoSecundario,
   },
+  // "Editar produtor" e "Apagar produtor" (S9.4), com a mesma cara dos botões do "Mudar" da Conta.
+  botoes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  acao: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.two + Spacing.one,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  acaoTexto: {
+    fontSize: 15,
+    fontWeight: 700,
+  },
+  acaoPressionada: {
+    opacity: 0.7,
+  },
+  acaoDesligada: {
+    opacity: 0.4,
+  },
+  acaoContorno: {
+    borderColor: Cacua.verde,
+    backgroundColor: Cacua.superficie,
+  },
+  acaoContornoTexto: {
+    color: Cacua.verdeEscuro,
+  },
+  acaoPerigo: {
+    backgroundColor: Cacua.vermelho,
+  },
+  acaoPerigoTexto: {
+    color: Cacua.superficie,
+  },
+  acaoPerigoContorno: {
+    borderColor: Cacua.vermelho,
+    backgroundColor: Cacua.superficie,
+  },
+  acaoPerigoContornoTexto: {
+    color: Cacua.vermelho,
+  },
+  pergunta: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: Cacua.texto,
+  },
+  motivo: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: Cacua.textoSecundario,
+  },
 });
