@@ -68,6 +68,11 @@ type ValorCacua = EstadoCacua & {
   desfazerConfirmacao: (data: string) => void;
   /** Volta tudo para os valores do dados.js e apaga o que foi salvo no celular. */
   restaurarPadrao: () => void;
+  /**
+   * Troca o estado inteiro pelo do backup (S9.3), que já passou pelo `lerBackup`, e guarda no celular.
+   * As contas de login não mudam.
+   */
+  restaurarBackup: (estado: EstadoCacua) => void;
 };
 
 const CacuaContext = createContext<ValorCacua | null>(null);
@@ -166,6 +171,11 @@ export function CacuaProvider({ children }: CacuaProviderProps) {
       produtoresAtuais.current = padrao.produtores;
       setEstado(padrao);
       apagarEstadoSalvo();
+    },
+    restaurarBackup: (doBackup) => {
+      // O estado novo vai para o celular pelo efeito de salvar, como qualquer mudança.
+      produtoresAtuais.current = doBackup.produtores;
+      setEstado(doBackup);
     },
   };
 
