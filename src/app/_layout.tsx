@@ -64,6 +64,8 @@ function Telas() {
         <Stack.Screen name="aviso/novo" options={{ title: 'Registrar aviso', headerBackTitle: 'Voltar' }} />
         {/* Os Custos saíram da barra de abas (no Android ela aceita no máximo 5) e abrem pelo Início (S6.5). */}
         <Stack.Screen name="custos" options={{ title: 'Custos e preços', headerBackTitle: 'Início' }} />
+        {/* O backup dos dados (S9.6), que abre pelo atalho do Início. */}
+        <Stack.Screen name="backup" options={{ title: 'Backup dos dados', headerBackTitle: 'Início' }} />
         {/* O formulário do produtor novo (S7.4), que abre pelo "+ Novo produtor" da aba Produtores. */}
         <Stack.Screen name="produtor/novo" options={{ title: 'Novo produtor', headerBackTitle: 'Produtores' }} />
         {/* O título vira o nome do produtor pela própria tela (Tela com cabecalhoNativo, S6.6). */}
