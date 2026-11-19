@@ -6,10 +6,13 @@ import { coletor, posto } from '@/data/dados';
 import { useCacua } from '@/state/cacua';
 import { calcularLucroDoDia } from '@/utils/calculos';
 import { diaComEntregas } from '@/utils/coleta';
+import { combinadosDos } from '@/utils/produtores';
 import { diaComKm } from '@/utils/rota';
 
 export default function AgendaScreen() {
   const { agenda, produtores, custos, precos, confirmados, entregas } = useCacua();
+  // Cada produtor com a porcentagem dele, a combinada ou a padrão (S9.5).
+  const combinados = combinadosDos(produtores);
 
   return (
     <Tela titulo="Agenda" descricao="Próximas coletas e se vale a pena passar em cada dia.">
@@ -22,7 +25,7 @@ export default function AgendaScreen() {
             <CartaoDia
               key={dia.data}
               dia={dia}
-              conta={calcularLucroDoDia(diaComKm(dia, produtores, posto), precos, custos)}
+              conta={calcularLucroDoDia(diaComKm(dia, produtores, posto), precos, custos, combinados)}
               cargaMinima={coletor.cargaMinima}
               confirmado={confirmados.includes(dia.data)}
             />

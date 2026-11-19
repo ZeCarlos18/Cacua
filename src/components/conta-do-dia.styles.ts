@@ -109,6 +109,11 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.texto,
   },
+  // "85%" ao lado do produtor com preço combinado (S9.5).
+  produtorPorcentagem: {
+    fontWeight: 600,
+    color: Cacua.verdeEscuro,
+  },
   // As caixas e, embaixo, o valor do aviso coletado (S8.5), os dois alinhados à direita.
   produtorQuanto: {
     alignItems: 'flex-end',

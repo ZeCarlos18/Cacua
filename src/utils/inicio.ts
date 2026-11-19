@@ -7,6 +7,7 @@
 import type { Aviso } from '@/utils/agenda';
 import { SELOS, calcularLucroDoDia } from '@/utils/calculos';
 import { viagensCheias } from '@/utils/previsao';
+import { combinadosDos } from '@/utils/produtores';
 import { montarRota } from '@/utils/rota';
 import { caixasColetadas, totalDeCaixas } from '@/utils/rota-do-dia';
 
@@ -17,6 +18,7 @@ type DiaDaAgenda = { dia: string; data: string; avisos: Aviso[] };
  * `{ ...useCacua(), posto }` (os produtores vêm do estado desde o S7.1).
  */
 export type DadosDoInicio = {
+  /** Os produtores do estado; os com `pagoProdutor` (preço combinado, S9.2) entram na conta (S9.5). */
   produtores: Parameters<typeof montarRota>[1];
   posto: Parameters<typeof montarRota>[2];
   precos: Parameters<typeof calcularLucroDoDia>[1];
@@ -44,7 +46,8 @@ export function resumoDoDia(
     caixas: totalDeCaixas(paradas),
     caixasColetadas: caixasColetadas(paradas, coletadosDoDia),
     km,
-    conta: calcularLucroDoDia({ ...dia, km }, precos, custos),
+    // Cada produtor com a porcentagem dele, a combinada ou a padrão (S9.5).
+    conta: calcularLucroDoDia({ ...dia, km }, precos, custos, combinadosDos(produtores)),
     confirmado: confirmados.includes(dia.data),
   };
 }

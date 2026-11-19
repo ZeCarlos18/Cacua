@@ -11,9 +11,12 @@ import { extratoDoProdutor, textoDoExtrato, totalDoExtrato } from '@/utils/extra
 import {
   avisosDoProdutor,
   comoAvisa,
+  fracaoCombinadaValida,
   historicoDoProdutor,
+  porcentagemDoProdutor,
   proximaColheita,
   taxaDeCumprimento,
+  textoDoPrecoDoProdutor,
   totalDosAvisos,
 } from '@/utils/produtores';
 import { kmEntre } from '@/utils/rota';
@@ -21,14 +24,15 @@ import { kmEntre } from '@/utils/rota';
 /**
  * Detalhes do produtor (S6.6): abre pela aba Produtores, em /produtor/4, por cima das abas. O
  * nome do produtor vai para a barra de cima, com o voltar (Tela com cabecalhoNativo, S6.3). Desde o
- * S8.6, mostra o que ele já entregou, com o "Mandar extrato".
+ * S8.6, mostra o que ele já entregou, com o "Mandar extrato", e desde o S9.5 a porcentagem do preço
+ * do Ceasa que ele recebe, com o "Mudar".
  */
 export default function ProdutorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const estado = useCacua();
   // O extrato sai com o nome de quem entrou ("Coletor: José Carlos"), como o recibo.
   const coletor = useColetor();
-  const { agenda, produtores, custos, coletas } = estado;
+  const { agenda, produtores, custos, coletas, combinarPreco } = estado;
   const produtor = produtores.find((item) => String(item.id) === id);
 
   if (!produtor) {
@@ -47,7 +51,8 @@ export default function ProdutorScreen() {
 
   return (
     <Tela titulo={produtor.nome} cabecalhoNativo>
-      <Lista>
+      {/* "handled": tocar em "Salvar" com o teclado aberto vale na primeira vez (S9.5). */}
+      <Lista keyboardShouldPersistTaps="handled">
         <DetalhesProdutor
           produtor={produtor}
           km={kmEntre(posto, produtor.posicao)}
@@ -57,7 +62,11 @@ export default function ProdutorScreen() {
           taxa={taxaDeCumprimento(historico)}
           avisos={avisos}
           total={totalDosAvisos(avisos)}
-          pagoProdutor={custos.pagoProdutor}
+          // A porcentagem dele, a combinada ou a padrão de Custos e preços (S9.5).
+          pagoProdutor={porcentagemDoProdutor(produtor, custos)}
+          precoDoProdutor={textoDoPrecoDoProdutor(produtor, custos)}
+          combinado={fracaoCombinadaValida(produtor.pagoProdutor)}
+          onCombinar={(fracao) => combinarPreco(produtor.id, fracao)}
           entregues={entregues}
           totalEntregue={totalDoExtrato(entregues)}
           extrato={textoDoExtrato(produtor, entregues, coletor, custos, estado.precos)}

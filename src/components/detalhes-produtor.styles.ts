@@ -64,6 +64,40 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     color: Cacua.verdeEscuro,
   },
+  // "Você paga 80% do preço do Ceasa (o padrão)" e o "Mudar" (S9.5): o botão desce para baixo do
+  // texto quando não cabe do lado.
+  precoDoProdutor: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  precoTexto: {
+    flexShrink: 1,
+    fontSize: 15,
+    lineHeight: 21,
+    color: Cacua.texto,
+  },
+  precoMudar: {
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.two + Spacing.one,
+    borderWidth: 1,
+    borderColor: Cacua.verde,
+    backgroundColor: Cacua.superficie,
+  },
+  precoMudarPressionado: {
+    backgroundColor: Cacua.verdeClaro,
+  },
+  precoMudarTexto: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: Cacua.verdeEscuro,
+  },
   textoSecundario: {
     fontSize: 15,
     lineHeight: 21,
