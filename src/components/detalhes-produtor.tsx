@@ -10,6 +10,7 @@ import { rotuloDoDia } from '@/utils/aviso';
 import { formatarReais } from '@/utils/calculos';
 import { textoDaPorcentagem, textoDoKm } from '@/utils/conta';
 import type { LinhaDoExtrato } from '@/utils/extrato';
+import { nomeComArtigo } from '@/utils/novo-produtor';
 import type { AvisoDoProdutor, SituacaoDoAviso } from '@/utils/produtores';
 import { textoDasCaixas } from '@/utils/rota-do-dia';
 
@@ -23,7 +24,7 @@ const SELO_DA_SITUACAO: Record<SituacaoDoAviso, { texto: string; cor: CorDoSelo 
 };
 
 type DetalhesProdutorProps = {
-  produtor: { sitio: string; canal: string; frutas: string[] };
+  produtor: { nome: string; sitio: string; canal: string; frutas: string[] };
   /** Do posto até o sítio, em linha reta (kmEntre, S6.3). */
   km: number;
   /** "Qui, sex e sáb", "Quinta · 20 cx de manga" ou a previsão; null se não tiver. */
@@ -50,12 +51,18 @@ type DetalhesProdutorProps = {
   totalEntregue: { caixas: number; valor: number };
   /** O texto que o "Mandar extrato" compartilha (textoDoExtrato, S8.3), ou null sem coleta. */
   extrato: string | null;
+  /** "Editar produtor" abre o formulário já preenchido (S9.4). */
+  onEditar: () => void;
+  /** "Sim, apagar", depois da pergunta (S9.4). */
+  onApagar: () => void;
+  /** Por que ele não pode ser apagado (motivoParaNaoApagar, S9.1), ou null: o botão fica desligado. */
+  motivoParaNaoApagar: string | null;
 };
 
 /**
  * Detalhes do produtor (S6.6), em cartões como a Conta do dia: o sítio, os avisos cumpridos, os
  * avisos na agenda, com o que o coletor paga por cada um, e o que ele já entregou, com o "Mandar
- * extrato" (S8.6).
+ * extrato" (S8.6). No fim, "Editar produtor" e "Apagar produtor" (S9.4).
  */
 export function DetalhesProdutor({
   produtor,
@@ -73,6 +80,9 @@ export function DetalhesProdutor({
   entregues,
   totalEntregue,
   extrato,
+  onEditar,
+  onApagar,
+  motivoParaNaoApagar,
 }: DetalhesProdutorProps) {
   // O "Mudar" da porcentagem aberto, na mesma linha do "Você paga…" (S9.5).
   const [mudandoPreco, setMudandoPreco] = useState(false);
@@ -159,6 +169,12 @@ export function DetalhesProdutor({
       </View>
 
       <OQueJaEntregou entregues={entregues} total={totalEntregue} extrato={extrato} />
+      <AcoesDoProdutor
+        nome={produtor.nome}
+        motivoParaNaoApagar={motivoParaNaoApagar}
+        onEditar={onEditar}
+        onApagar={onApagar}
+      />
     </>
   );
 }
@@ -219,6 +235,49 @@ function OQueJaEntregou({ entregues, total, extrato }: OQueJaEntregouProps) {
   );
 }
 
+type AcoesDoProdutorProps = {
+  nome: string;
+  motivoParaNaoApagar: string | null;
+  onEditar: () => void;
+  onApagar: () => void;
+};
+
+/**
+ * "Editar produtor" e "Apagar produtor" (S9.4). O apagar pergunta antes, na própria tela ("Apagar o
+ * Seu Francisco? Isso não tem volta."), porque o Alert não faz nada na web. Com aviso na agenda,
+ * ou sendo o último produtor, o botão fica desligado, com o motivo embaixo.
+ */
+function AcoesDoProdutor({ nome, motivoParaNaoApagar, onEditar, onApagar }: AcoesDoProdutorProps) {
+  const [perguntando, setPerguntando] = useState(false);
+
+  if (perguntando) {
+    return (
+      <View style={styles.cartao} accessibilityLiveRegion="polite">
+        <Text style={styles.pergunta}>Apagar {nomeComArtigo(nome)}? Isso não tem volta.</Text>
+        <View style={styles.botoes}>
+          <Botao texto="Sim, apagar" tipo="acaoPerigo" onPress={onApagar} />
+          <Botao texto="Não" tipo="acaoContorno" onPress={() => setPerguntando(false)} />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.cartao}>
+      <View style={styles.botoes}>
+        <Botao texto="Editar produtor" tipo="acaoContorno" onPress={onEditar} />
+        <Botao
+          texto="Apagar produtor"
+          tipo="acaoPerigoContorno"
+          desligado={motivoParaNaoApagar !== null}
+          onPress={() => setPerguntando(true)}
+        />
+      </View>
+      {motivoParaNaoApagar ? <Text style={styles.motivo}>{motivoParaNaoApagar}</Text> : null}
+    </View>
+  );
+}
+
 /**
  * Abre o compartilhar do celular com o extrato pronto; o coletor escolhe o WhatsApp e o produtor.
  * Na web, o compartilhar pode não existir: aí nada abre, e o app continua normal (como no recibo).
@@ -229,6 +288,26 @@ async function mandarExtrato(extrato: string) {
   } catch (erro) {
     console.warn('Não deu para abrir o compartilhar:', erro);
   }
+}
+
+type BotaoProps = {
+  texto: string;
+  tipo: 'acaoContorno' | 'acaoPerigo' | 'acaoPerigoContorno';
+  desligado?: boolean;
+  onPress: () => void;
+};
+
+function Botao({ texto, tipo, desligado, onPress }: BotaoProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: desligado }}
+      disabled={desligado}
+      onPress={onPress}
+      style={({ pressed }) => [styles.acao, styles[tipo], pressed && styles.acaoPressionada, desligado && styles.acaoDesligada]}>
+      <Text style={[styles.acaoTexto, styles[`${tipo}Texto`]]}>{texto}</Text>
+    </Pressable>
+  );
 }
 
 /** Um aviso: dia e selo da situação, fruta, caixas e preço da caixa, e quanto o coletor paga. */

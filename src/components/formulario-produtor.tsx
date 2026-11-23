@@ -29,17 +29,30 @@ type FormularioProdutorProps = {
   sitios: { id: number; sitio: string; posicao: Posicao }[];
   /** Devolve os erros de cada campo, ou null se deu certo (e o produtor já entrou na lista). */
   onSalvar: (campos: CamposDoProdutor) => ErrosDoProdutor | null;
+  /** Os campos já preenchidos (camposDoProdutor), para editar (S9.4). Sem eles, o formulário vem vazio. */
+  campos?: CamposDoProdutor;
+  /** O texto do botão: "Salvar produtor" no Novo produtor e "Salvar mudanças" no Editar (S9.4). */
+  botao?: string;
 };
 
 /**
  * Formulário "Novo produtor" (S7.4): nome, sítio, frutas, como ele avisa e o lugar do sítio no
  * mapa. Os erros aparecem embaixo de cada campo ao tocar em "Salvar produtor", e o erro de um
- * campo some quando ele é corrigido, como no Criar conta (S6.4).
+ * campo some quando ele é corrigido, como no Criar conta (S6.4). Desde o S9.4, o mesmo formulário
+ * edita um produtor: vem preenchido, com o sítio já marcado no mapa, e o botão vira "Salvar
+ * mudanças".
  */
-export function FormularioProdutor({ posto, area, sitios, onSalvar }: FormularioProdutorProps) {
+export function FormularioProdutor({
+  posto,
+  area,
+  sitios,
+  onSalvar,
+  campos: iniciais = VAZIO,
+  botao = 'Salvar produtor',
+}: FormularioProdutorProps) {
   const insets = useSafeAreaInsets();
   const alturaDaBarra = useHeaderHeight();
-  const [campos, setCampos] = useState(VAZIO);
+  const [campos, setCampos] = useState(iniciais);
   const [erros, setErros] = useState<ErrosDoProdutor>({});
   const sitio = useRef<TextInputInstance>(null);
 
@@ -51,12 +64,12 @@ export function FormularioProdutor({ posto, area, sitios, onSalvar }: Formulario
   }
 
   function salvar() {
-    // Se deu certo, a tela volta para Produtores.
+    // Se deu certo, a tela volta (para Produtores, ou para os detalhes ao editar).
     setErros(onSalvar(campos) ?? {});
   }
 
   return (
-    // A tela fica embaixo da barra "Novo produtor", então o teclado sobe descontando a altura dela.
+    // A tela fica embaixo da barra com o título, então o teclado sobe descontando a altura dela.
     <KeyboardAvoidingView style={styles.tela} behavior="padding" keyboardVerticalOffset={alturaDaBarra}>
       <ScrollView
         contentContainerStyle={[styles.conteudo, { paddingBottom: insets.bottom + Spacing.four }]}
@@ -102,7 +115,7 @@ export function FormularioProdutor({ posto, area, sitios, onSalvar }: Formulario
           accessibilityRole="button"
           onPress={salvar}
           style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}>
-          <Text style={styles.botaoTexto}>Salvar produtor</Text>
+          <Text style={styles.botaoTexto}>{botao}</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
